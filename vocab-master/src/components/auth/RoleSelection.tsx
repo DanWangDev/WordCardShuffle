@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { GraduationCap, Users, ArrowLeft } from 'lucide-react';
 
@@ -8,11 +9,12 @@ interface RoleSelectionProps {
 }
 
 export function RoleSelection({ onSelectStudent, onSelectParent, onBack }: RoleSelectionProps) {
+  const { t } = useTranslation('auth');
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Account</h2>
-        <p className="text-gray-600">Who are you?</p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('roleSelection.title')}</h2>
+        <p className="text-gray-600">{t('roleSelection.subtitle')}</p>
       </div>
 
       <div className="space-y-4">
@@ -28,8 +30,8 @@ export function RoleSelection({ onSelectStudent, onSelectParent, onBack }: RoleS
               <GraduationCap className="w-7 h-7 text-indigo-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-800">I'm a Student</h3>
-              <p className="text-sm text-gray-600">I want to learn new words!</p>
+              <h3 className="text-lg font-bold text-gray-800">{t('roleSelection.student')}</h3>
+              <p className="text-sm text-gray-600">{t('roleSelection.studentDesc')}</p>
             </div>
           </div>
         </motion.button>
@@ -46,8 +48,8 @@ export function RoleSelection({ onSelectStudent, onSelectParent, onBack }: RoleS
               <Users className="w-7 h-7 text-purple-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-800">I'm a Parent</h3>
-              <p className="text-sm text-gray-600">I want to track my child's progress</p>
+              <h3 className="text-lg font-bold text-gray-800">{t('roleSelection.parent')}</h3>
+              <p className="text-sm text-gray-600">{t('roleSelection.parentDesc')}</p>
             </div>
           </div>
         </motion.button>
@@ -59,7 +61,7 @@ export function RoleSelection({ onSelectStudent, onSelectParent, onBack }: RoleS
           className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 font-medium transition-colors"
         >
           <ArrowLeft size={18} />
-          Back to sign in
+          {t('backToSignIn')}
         </button>
       </div>
     </div>

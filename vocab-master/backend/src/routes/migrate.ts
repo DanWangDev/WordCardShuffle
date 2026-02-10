@@ -23,11 +23,13 @@ router.post('/import', validate(importDataSchema), (req: AuthRequest, res: Respo
       const updatedSettings = settingsRepository.update(
         userId,
         settings.soundEnabled,
-        settings.autoAdvance
+        settings.autoAdvance,
+        settings.language
       );
       importedSettings = {
         soundEnabled: updatedSettings.sound_enabled === 1,
-        autoAdvance: updatedSettings.auto_advance === 1
+        autoAdvance: updatedSettings.auto_advance === 1,
+        language: updatedSettings.language || 'en'
       };
     }
 
@@ -80,10 +82,12 @@ router.get('/export', (req: AuthRequest, res: Response) => {
 
     const settings: UserSettings = settingsRow ? {
       soundEnabled: settingsRow.sound_enabled === 1,
-      autoAdvance: settingsRow.auto_advance === 1
+      autoAdvance: settingsRow.auto_advance === 1,
+      language: settingsRow.language || 'en'
     } : {
       soundEnabled: true,
-      autoAdvance: false
+      autoAdvance: false,
+      language: 'en'
     };
 
     const stats: UserStats = statsRow ? {

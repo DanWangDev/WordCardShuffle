@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame } from 'lucide-react';
 import { ModeCard } from './ModeCard';
@@ -23,6 +24,7 @@ interface ActivityStats {
 }
 
 export function Dashboard() {
+  const { t } = useTranslation('dashboard');
   const { vocabulary } = useApp();
   const { state: authState } = useAuth();
   const { soundEnabled, toggleSound, playClick } = useAudio();
@@ -112,12 +114,12 @@ export function Dashboard() {
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-primary-100 relative overflow-hidden">
             <div className="relative z-10">
               <h2 className="text-2xl font-black text-primary-900 mb-1">
-                Hi, {authState.user?.displayName || authState.user?.username}! 👋
+                {t('greeting', { name: authState.user?.displayName || authState.user?.username })} 👋
               </h2>
               {userRole === 'student' ? (
-                <p className="text-primary-600 font-medium">Ready to learn some new words?</p>
+                <p className="text-primary-600 font-medium">{t('readyToLearn')}</p>
               ) : (
-                <p className="text-primary-600 font-medium">Welcome to your dashboard.</p>
+                <p className="text-primary-600 font-medium">{t('welcomeDashboard')}</p>
               )}
             </div>
             <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary-100 rounded-full opacity-50 blur-xl"></div>
@@ -126,18 +128,18 @@ export function Dashboard() {
           {/* Role-based Content */}
           {userRole === 'admin' ? (
             <ModeCard
-              title="Admin Panel"
-              description="Manage users and system settings"
-              icon={Brain} // Using Brain mostly for placeholder, effectively replaces "AdminDashboard"
-              color="quiz" // Re-using Quiz color style (Amber) for Admin
+              title={t('adminPanel')}
+              description={t('adminPanelDesc')}
+              icon={Brain}
+              color="quiz"
               onClick={() => navigate('/admin')}
             />
           ) : userRole === 'parent' ? (
             <ModeCard
-              title="Parent Dashboard"
-              description="View your children's progress"
-              icon={Trophy} // Re-using Trophy
-              color="challenge" // Re-using Challenge color style (Red/Rose)
+              title={t('parentDashboard')}
+              description={t('parentDashboardDesc')}
+              icon={Trophy}
+              color="challenge"
               onClick={() => navigate('/parent')}
             />
           ) : (
@@ -147,7 +149,7 @@ export function Dashboard() {
               {linkRequests.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wide">
-                    Pending Link Requests
+                    {t('pendingLinkRequests')}
                   </h3>
                   {linkRequests.map(request => (
                     <LinkRequestCard
@@ -161,8 +163,8 @@ export function Dashboard() {
               )}
               {/* Study Mode */}
               <ModeCard
-                title="Study Mode"
-                description="Flip cards & learn"
+                title={t('studyMode')}
+                description={t('studyModeDesc')}
                 icon={BookOpen}
                 color="study"
                 onClick={() => handleModeSelect('study')}
@@ -170,8 +172,8 @@ export function Dashboard() {
 
               {/* Quiz Mode */}
               <ModeCard
-                title="Quiz Mode"
-                description="Test your knowledge"
+                title={t('quizMode')}
+                description={t('quizModeDesc')}
                 icon={Brain}
                 color="quiz"
                 onClick={() => handleModeSelect('quiz')}
@@ -179,12 +181,12 @@ export function Dashboard() {
 
               {/* Daily Challenge */}
               <ModeCard
-                title="Daily Challenge"
-                description="Beat the clock!"
+                title={t('dailyChallenge')}
+                description={t('dailyChallengeDesc')}
                 icon={Trophy}
                 color="challenge"
                 onClick={() => handleModeSelect('challenge')}
-                badge={hasTodayChallenge ? 'Done!' : 'New!'}
+                badge={hasTodayChallenge ? t('badgeDone') : t('badgeNew')}
               />
             </>
           )}
@@ -200,7 +202,7 @@ export function Dashboard() {
             className="mt-8 p-6 bg-white rounded-3xl border-2 border-primary-100/50 shadow-xl shadow-primary-100/50"
           >
             <h2 className="text-sm font-black text-primary-400 uppercase tracking-widest mb-4 text-center">
-              Your Stats
+              {t('yourStats')}
             </h2>
             <div className="grid grid-cols-4 gap-3">
               {/* Quizzes */}
@@ -211,7 +213,7 @@ export function Dashboard() {
                 <p className="text-xl font-black text-gray-800">
                   {activityStats.quizCount}
                 </p>
-                <p className="text-[10px] text-gray-500 font-bold">Quizzes</p>
+                <p className="text-[10px] text-gray-500 font-bold">{t('statsQuizzes')}</p>
               </div>
               {/* Accuracy */}
               <div className="flex flex-col items-center">
@@ -221,7 +223,7 @@ export function Dashboard() {
                 <p className="text-xl font-black text-gray-800">
                   {activityStats.avgAccuracy}%
                 </p>
-                <p className="text-[10px] text-gray-500 font-bold">Accuracy</p>
+                <p className="text-[10px] text-gray-500 font-bold">{t('statsAccuracy')}</p>
               </div>
               {/* Words Reviewed */}
               <div className="flex flex-col items-center">
@@ -231,7 +233,7 @@ export function Dashboard() {
                 <p className="text-xl font-black text-gray-800">
                   {activityStats.wordsReviewed}
                 </p>
-                <p className="text-[10px] text-gray-500 font-bold">Reviewed</p>
+                <p className="text-[10px] text-gray-500 font-bold">{t('statsReviewed')}</p>
               </div>
               {/* Streak */}
               <div className="flex flex-col items-center">
@@ -241,7 +243,7 @@ export function Dashboard() {
                 <p className="text-xl font-black text-gray-800">
                   {activityStats.currentStreak}
                 </p>
-                <p className="text-[10px] text-gray-500 font-bold">Streak</p>
+                <p className="text-[10px] text-gray-500 font-bold">{t('statsStreak')}</p>
               </div>
             </div>
           </motion.div>

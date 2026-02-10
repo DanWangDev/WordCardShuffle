@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, UserPlus, Loader2 } from 'lucide-react';
 
 interface RegisterFormProps {
@@ -9,6 +10,7 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: RegisterFormProps) {
+  const { t } = useTranslation('auth');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,19 +20,19 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
 
   const validate = (): boolean => {
     if (username.length < 3) {
-      setValidationError('Username must be at least 3 characters');
+      setValidationError(t('validation.usernameMin'));
       return false;
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-      setValidationError('Username can only contain letters, numbers, underscores, and hyphens');
+      setValidationError(t('validation.usernameChars'));
       return false;
     }
     if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
+      setValidationError(t('validation.passwordMin'));
       return false;
     }
     if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
+      setValidationError(t('validation.passwordsNoMatch'));
       return false;
     }
     setValidationError(null);
@@ -49,7 +51,7 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label htmlFor="reg-username" className="block text-sm font-medium text-gray-200 mb-2">
-          Username
+          {t('form.username')}
         </label>
         <input
           id="reg-username"
@@ -60,19 +62,19 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
             setValidationError(null);
           }}
           className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="Choose a username"
+          placeholder={t('placeholder.chooseUsername')}
           disabled={isLoading}
           autoComplete="username"
           autoFocus
         />
         <p className="mt-1 text-xs text-gray-400">
-          3-30 characters, letters, numbers, underscores, hyphens
+          {t('hint.usernameChars')}
         </p>
       </div>
 
       <div>
         <label htmlFor="display-name" className="block text-sm font-medium text-gray-200 mb-2">
-          Display Name <span className="text-gray-500">(optional)</span>
+          {t('form.displayName')} <span className="text-gray-500">{t('form.optional')}</span>
         </label>
         <input
           id="display-name"
@@ -80,7 +82,7 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="How should we call you?"
+          placeholder={t('placeholder.displayName')}
           disabled={isLoading}
           autoComplete="name"
         />
@@ -88,7 +90,7 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
 
       <div>
         <label htmlFor="reg-password" className="block text-sm font-medium text-gray-200 mb-2">
-          Password
+          {t('form.password')}
         </label>
         <div className="relative">
           <input
@@ -100,7 +102,7 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
               setValidationError(null);
             }}
             className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all pr-12"
-            placeholder="Create a password"
+            placeholder={t('placeholder.createPassword')}
             disabled={isLoading}
             autoComplete="new-password"
           />
@@ -113,12 +115,12 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
-        <p className="mt-1 text-xs text-gray-400">At least 6 characters</p>
+        <p className="mt-1 text-xs text-gray-400">{t('hint.minPassword')}</p>
       </div>
 
       <div>
         <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-200 mb-2">
-          Confirm Password
+          {t('form.confirmPassword')}
         </label>
         <input
           id="confirm-password"
@@ -129,7 +131,7 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
             setValidationError(null);
           }}
           className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="Confirm your password"
+          placeholder={t('placeholder.confirmPassword')}
           disabled={isLoading}
           autoComplete="new-password"
         />
@@ -149,25 +151,25 @@ export function RegisterForm({ onSubmit, onSwitchToLogin, isLoading, error }: Re
         {isLoading ? (
           <>
             <Loader2 size={20} className="animate-spin" />
-            Creating account...
+            {t('creatingAccount')}
           </>
         ) : (
           <>
             <UserPlus size={20} />
-            Create Account
+            {t('createAccount')}
           </>
         )}
       </button>
 
       <div className="text-center">
-        <span className="text-gray-400">Already have an account? </span>
+        <span className="text-gray-400">{t('alreadyHaveAccount')} </span>
         <button
           type="button"
           onClick={onSwitchToLogin}
           className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
           disabled={isLoading}
         >
-          Sign in
+          {t('signIn')}
         </button>
       </div>
     </form>

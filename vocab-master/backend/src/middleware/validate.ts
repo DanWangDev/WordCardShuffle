@@ -100,8 +100,9 @@ export const refreshSchema = z.object({
 
 export const updateSettingsSchema = z.object({
   soundEnabled: z.boolean().optional(),
-  autoAdvance: z.boolean().optional()
-}).refine(data => data.soundEnabled !== undefined || data.autoAdvance !== undefined, {
+  autoAdvance: z.boolean().optional(),
+  language: z.enum(['en', 'zh-CN']).optional()
+}).refine(data => data.soundEnabled !== undefined || data.autoAdvance !== undefined || data.language !== undefined, {
   message: 'At least one setting must be provided'
 });
 
@@ -120,7 +121,8 @@ export const completeChallengeSchema = z.object({
 export const importDataSchema = z.object({
   settings: z.object({
     soundEnabled: z.boolean(),
-    autoAdvance: z.boolean()
+    autoAdvance: z.boolean(),
+    language: z.enum(['en', 'zh-CN']).optional()
   }).optional(),
   stats: z.object({
     totalWordsStudied: z.number().int().min(0),

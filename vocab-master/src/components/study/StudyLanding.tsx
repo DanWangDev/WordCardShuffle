@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { BookOpen, AlertCircle, Loader2 } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
@@ -17,6 +18,7 @@ interface WeakWord {
 }
 
 export function StudyLanding() {
+  const { t } = useTranslation('study');
   const navigate = useNavigate();
   const { playClick } = useAudio();
   const [weakWords, setWeakWords] = useState<WeakWord[]>([]);
@@ -55,7 +57,7 @@ export function StudyLanding() {
     <div className="min-h-screen bg-gradient-to-b from-study-light/30 to-gray-50">
       <TopBar
         onBack={handleBack}
-        title="Study Mode"
+        title={t('title')}
         rightContent={<><NotificationBell /><UserMenu /></>}
       />
 
@@ -78,10 +80,10 @@ export function StudyLanding() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  Study All Words
+                  {t('studyAllWords')}
                 </h3>
                 <p className="text-gray-500 text-sm">
-                  Review flashcards from the complete vocabulary list. Perfect for learning new words.
+                  {t('studyAllWordsDesc')}
                 </p>
               </div>
             </div>
@@ -110,7 +112,7 @@ export function StudyLanding() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-xl font-bold text-gray-900">
-                    Practice Mistakes
+                    {t('practiceMistakes')}
                   </h3>
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
@@ -122,10 +124,10 @@ export function StudyLanding() {
                 </div>
                 <p className="text-gray-500 text-sm">
                   {loading
-                    ? 'Loading your practice list...'
+                    ? t('practiceMistakesLoading')
                     : weakWords.length > 0
-                    ? 'Focus on words you\'ve gotten wrong in quizzes. Master your weak spots!'
-                    : 'No mistakes yet! Take some quizzes first to identify areas to practice.'}
+                    ? t('practiceMistakesDesc')
+                    : t('practiceMistakesEmpty')}
                 </p>
               </div>
             </div>
@@ -133,7 +135,7 @@ export function StudyLanding() {
             {/* Preview of weak words */}
             {weakWords.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-400 mb-2 font-medium">Words to practice:</p>
+                <p className="text-xs text-gray-400 mb-2 font-medium">{t('wordsToPractice')}</p>
                 <div className="flex flex-wrap gap-2">
                   {weakWords.slice(0, 5).map((w) => (
                     <span
@@ -145,7 +147,7 @@ export function StudyLanding() {
                   ))}
                   {weakWords.length > 5 && (
                     <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
-                      +{weakWords.length - 5} more
+                      {t('moreWords', { count: weakWords.length - 5 })}
                     </span>
                   )}
                 </div>

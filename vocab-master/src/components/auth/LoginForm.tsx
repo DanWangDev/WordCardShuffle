@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LogIn, Loader2, KeyRound } from 'lucide-react';
 
 interface LoginFormProps {
@@ -10,6 +11,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLoading, error }: LoginFormProps) {
+  const { t } = useTranslation('auth');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +26,7 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="username" className="block text-sm font-medium text-gray-200 mb-2">
-          Username
+          {t('form.username')}
         </label>
         <input
           id="username"
@@ -32,7 +34,7 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="Enter your username"
+          placeholder={t('placeholder.username')}
           disabled={isLoading}
           autoComplete="username"
           autoFocus
@@ -41,7 +43,7 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
-          Password
+          {t('form.password')}
         </label>
         <div className="relative">
           <input
@@ -50,7 +52,7 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all pr-12"
-            placeholder="Enter your password"
+            placeholder={t('placeholder.password')}
             disabled={isLoading}
             autoComplete="current-password"
           />
@@ -79,26 +81,26 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
         {isLoading ? (
           <>
             <Loader2 size={20} className="animate-spin" />
-            Signing in...
+            {t('signingIn')}
           </>
         ) : (
           <>
             <LogIn size={20} />
-            Sign In
+            {t('signIn')}
           </>
         )}
       </button>
 
       <div className="flex flex-col items-center gap-3">
         <div>
-          <span className="text-gray-400">Don't have an account? </span>
+          <span className="text-gray-400">{t('noAccount')} </span>
           <button
             type="button"
             onClick={onSwitchToRegister}
             className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
             disabled={isLoading}
           >
-            Create one
+            {t('createOne')}
           </button>
         </div>
         {onForgotPassword && (
@@ -109,7 +111,7 @@ export function LoginForm({ onSubmit, onSwitchToRegister, onForgotPassword, isLo
             disabled={isLoading}
           >
             <KeyRound size={14} />
-            Forgot password?
+            {t('forgotPassword')}
           </button>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, Send } from 'lucide-react';
 import { Button } from '../common';
@@ -24,6 +25,7 @@ export function MultiSelectQuestion({
   userAnswers,
   disabled,
 }: MultiSelectQuestionProps) {
+  const { t } = useTranslation('challenge');
   const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
 
   // Reset selections when question changes
@@ -88,13 +90,13 @@ export function MultiSelectQuestion({
       {/* Prompt - Show the word */}
       <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-          Select all {question.promptType === 'synonym' ? 'synonyms' : 'definitions'} of:
+          {question.promptType === 'synonym' ? t('selectAllSynonyms') : t('selectAllDefinitions')}
         </p>
         <p className="text-2xl sm:text-3xl text-gray-900 font-bold text-center py-2">
           {question.prompt}
         </p>
         <p className="text-xs text-gray-400 text-center mt-2">
-          (Select multiple options)
+          {t('selectMultiple')}
         </p>
       </div>
 
@@ -205,11 +207,11 @@ export function MultiSelectQuestion({
             </div>
             <div>
               <p className={`font-semibold ${isAllCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                {isAllCorrect ? 'Perfect!' : 'Not quite right'}
+                {isAllCorrect ? t('perfect') : t('notQuiteRight')}
               </p>
               {!isAllCorrect && (
                 <p className="text-sm text-gray-600">
-                  Correct answers: {correctAnswers.length} | You selected: {userAnswers?.length || 0}
+                  {t('correctAnswersCount', { correct: correctAnswers.length, selected: userAnswers?.length || 0 })}
                 </p>
               )}
             </div>
@@ -226,7 +228,7 @@ export function MultiSelectQuestion({
           disabled={selectedOptions.size === 0 || disabled}
         >
           <Send className="w-5 h-5" />
-          Submit Answer ({selectedOptions.size} selected)
+          {t('submitAnswer', { count: selectedOptions.size })}
         </Button>
       )}
     </motion.div>

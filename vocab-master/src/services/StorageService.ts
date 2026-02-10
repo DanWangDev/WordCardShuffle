@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
 const DEFAULT_SETTINGS: UserSettings = {
   soundEnabled: true,
   autoAdvance: false,
+  language: 'en',
 };
 
 const DEFAULT_STATS: UserStats = {

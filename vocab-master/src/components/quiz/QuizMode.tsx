@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence } from 'framer-motion';
 import { TopBar } from '../layout/TopBar';
 import { Timer, ProgressBar, Button } from '../common';
@@ -15,6 +16,7 @@ import { useAudio } from '../../hooks/useAudio';
 import type { QuizConfig } from '../../types';
 
 export function QuizMode() {
+  const { t } = useTranslation('quiz');
   const { vocabulary, loadUserData } = useApp();
   const { playSuccess, playError, playClick, playWarning } = useAudio();
   const navigate = useNavigate();
@@ -178,7 +180,7 @@ export function QuizMode() {
       {state.status !== 'complete' && (
         <TopBar
           onBack={handleHome}
-          title={state.status === 'setup' ? 'Quiz Settings' : `Question ${state.currentIndex + 1}/${state.totalQuestions}`}
+          title={state.status === 'setup' ? t('settings') : t('questionCount', { current: state.currentIndex + 1, total: state.totalQuestions })}
           rightContent={
             <div className="flex items-center gap-3">
               {state.status === 'active' && (
@@ -190,7 +192,7 @@ export function QuizMode() {
                     onWarning={playWarning}
                   />
                 ) : (
-                  <span className="text-sm text-gray-500 font-medium">No time limit</span>
+                  <span className="text-sm text-gray-500 font-medium">{t('noTimeLimit')}</span>
                 )
               )}
               <NotificationBell />
@@ -241,7 +243,7 @@ export function QuizMode() {
                   fullWidth
                   onClick={handleNext}
                 >
-                  {isLastQuestion ? 'See Results' : 'Next Question'}
+                  {isLastQuestion ? t('seeResults') : t('nextQuestion')}
                 </Button>
               </div>
             )}

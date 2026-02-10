@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { X, KeyRound, Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '../common';
@@ -17,6 +18,7 @@ export function ResetStudentPasswordModal({
   onClose,
   onSuccess
 }: ResetStudentPasswordModalProps) {
+  const { t } = useTranslation('admin');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,11 +31,11 @@ export function ResetStudentPasswordModal({
 
     // Validation
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('validation.passwordMin'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('validation.passwordsNoMatch'));
       return;
     }
 
@@ -64,8 +66,8 @@ export function ResetStudentPasswordModal({
               <KeyRound className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Reset Password</h3>
-              <p className="text-sm text-gray-500">For {userName}</p>
+              <h3 className="font-bold text-gray-900">{t('resetPassword')}</h3>
+              <p className="text-sm text-gray-500">{t('resetPasswordFor', { name: userName })}</p>
             </div>
           </div>
           <button
@@ -82,13 +84,13 @@ export function ResetStudentPasswordModal({
           <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-700">
-              This will set a new password for the student. They will be logged out of all devices.
+              {t('resetPasswordWarning')}
             </p>
           </div>
 
           <div>
             <label htmlFor="reset-password" className="block text-sm font-medium text-gray-700 mb-2">
-              New Password
+              {t('form.newPassword')}
             </label>
             <div className="relative">
               <input
@@ -100,7 +102,7 @@ export function ResetStudentPasswordModal({
                   setError(null);
                 }}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all pr-12"
-                placeholder="Enter new password"
+                placeholder={t('placeholder.newPassword')}
                 disabled={isSubmitting}
                 autoComplete="new-password"
                 autoFocus
@@ -114,12 +116,12 @@ export function ResetStudentPasswordModal({
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-500">At least 6 characters</p>
+            <p className="mt-1 text-xs text-gray-500">{t('hint.minPassword')}</p>
           </div>
 
           <div>
             <label htmlFor="reset-confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
+              {t('form.confirmPassword')}
             </label>
             <input
               id="reset-confirm-password"
@@ -130,7 +132,7 @@ export function ResetStudentPasswordModal({
                 setError(null);
               }}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              placeholder="Confirm new password"
+              placeholder={t('placeholder.confirmPassword')}
               disabled={isSubmitting}
               autoComplete="new-password"
             />
@@ -162,12 +164,12 @@ export function ResetStudentPasswordModal({
               {isSubmitting ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
-                  Resetting...
+                  {t('resetting')}
                 </>
               ) : (
                 <>
                   <KeyRound size={18} />
-                  Reset Password
+                  {t('resetPassword')}
                 </>
               )}
             </Button>

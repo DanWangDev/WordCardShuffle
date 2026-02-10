@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
 interface TrendChartProps {
@@ -78,10 +79,12 @@ export function TrendChart({
         }));
     }, [data, xAxisKey, dataKey, shouldAggregate]);
 
+    const { t } = useTranslation('parent');
+
     if (!processedData || processedData.length === 0) {
         return (
             <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg text-gray-400">
-                No data available for chart
+                {t('noChartData')}
             </div>
         );
     }

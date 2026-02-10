@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { VocabularyWord } from '../../types';
 import { getRandomElement } from '../../utils';
@@ -9,6 +10,7 @@ interface FlashCardProps {
 }
 
 export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
+  const { t } = useTranslation('study');
   // Get a random example sentence
   const exampleSentence = word.exampleSentence.length > 0
     ? getRandomElement(word.exampleSentence)
@@ -44,7 +46,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
       }}
       tabIndex={0}
       role="button"
-      aria-label={isFlipped ? 'Show word' : 'Show definition'}
+      aria-label={isFlipped ? t('showWord') : t('showDefinition')}
     >
       <motion.div
         className="relative w-full preserve-3d"
@@ -67,7 +69,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
             {word.targetWord}
           </h2>
           <p className="mt-6 lg:mt-8 text-sm md:text-base lg:text-lg text-gray-400">
-            Click card to flip
+            {t('clickToFlip')}
           </p>
         </div>
 
@@ -89,7 +91,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
           {/* Definitions */}
           <div className="flex-1 overflow-y-auto">
             <h3 className="text-xs md:text-sm lg:text-base font-semibold text-gray-400 uppercase tracking-wide mb-2 md:mb-3 lg:mb-4">
-              Definition
+              {t('definition')}
             </h3>
             <ul className="space-y-2 md:space-y-3 lg:space-y-4">
               {word.definition.map((def, index) => (
@@ -107,7 +109,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
             {word.synonyms.length > 0 && (
               <div className="mt-4 md:mt-6 lg:mt-8">
                 <h3 className="text-xs md:text-sm lg:text-base font-semibold text-gray-400 uppercase tracking-wide mb-2 md:mb-3 lg:mb-4">
-                  Synonyms
+                  {t('synonyms')}
                 </h3>
                 <div className="flex flex-wrap gap-2 md:gap-3 lg:gap-4">
                   {word.synonyms.map((synonym, index) => (
@@ -126,7 +128,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
             {exampleSentence && (
               <div className="mt-4 md:mt-6 lg:mt-8">
                 <h3 className="text-xs md:text-sm lg:text-base font-semibold text-gray-400 uppercase tracking-wide mb-2 md:mb-3 lg:mb-4">
-                  Example
+                  {t('example')}
                 </h3>
                 <p className="text-gray-600 text-sm md:text-base lg:text-lg xl:text-xl">
                   "{renderExampleWithHighlight(exampleSentence)}"
@@ -136,7 +138,7 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
           </div>
 
           <p className="mt-4 lg:mt-6 text-xs md:text-sm lg:text-base text-gray-400 text-center">
-            Click card to flip back
+            {t('clickToFlipBack')}
           </p>
         </div>
       </motion.div>

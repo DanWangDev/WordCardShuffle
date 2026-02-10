@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Trophy, RotateCcw, Home } from 'lucide-react';
 import { Button, Card } from '../common';
@@ -11,6 +12,7 @@ interface QuizResultsProps {
 }
 
 export function QuizResults({ state, onRestart, onHome }: QuizResultsProps) {
+  const { t } = useTranslation('quiz');
   const correctCount = state.answers.filter(a => a.isCorrect).length;
   const percentage = calculatePercentage(correctCount, state.totalQuestions);
   const { grade, color } = getGrade(percentage);
@@ -43,7 +45,7 @@ export function QuizResults({ state, onRestart, onHome }: QuizResultsProps) {
           </motion.div>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Quiz Complete!
+            {t('quizComplete')}
           </h2>
 
           <motion.div
@@ -59,17 +61,17 @@ export function QuizResults({ state, onRestart, onHome }: QuizResultsProps) {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="text-center p-3 bg-gray-50 rounded-xl">
             <p className="text-2xl font-bold text-gray-900">{correctCount}</p>
-            <p className="text-xs text-gray-500">Correct</p>
+            <p className="text-xs text-gray-500">{t('correct')}</p>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-xl">
             <p className="text-2xl font-bold text-gray-900">
               {state.totalQuestions - correctCount}
             </p>
-            <p className="text-xs text-gray-500">Incorrect</p>
+            <p className="text-xs text-gray-500">{t('incorrect')}</p>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-xl">
             <p className="text-2xl font-bold text-gray-900">{percentage}%</p>
-            <p className="text-xs text-gray-500">Score</p>
+            <p className="text-xs text-gray-500">{t('score')}</p>
           </div>
         </div>
 
@@ -77,7 +79,7 @@ export function QuizResults({ state, onRestart, onHome }: QuizResultsProps) {
         {incorrectWords.length > 0 && (
           <div className="mb-8">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Words to Review
+              {t('wordsToReview')}
             </h3>
             <div className="flex flex-wrap gap-2">
               {incorrectWords.map((word, index) => (
@@ -96,11 +98,11 @@ export function QuizResults({ state, onRestart, onHome }: QuizResultsProps) {
         <div className="space-y-3">
           <Button variant="quiz" fullWidth onClick={onRestart}>
             <RotateCcw className="w-5 h-5" />
-            Try Again
+            {t('tryAgain')}
           </Button>
           <Button variant="ghost" fullWidth onClick={onHome}>
             <Home className="w-5 h-5" />
-            Back to Home
+            {t('backToHome')}
           </Button>
         </div>
       </Card>

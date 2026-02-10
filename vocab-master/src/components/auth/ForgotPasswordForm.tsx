@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 
 interface ForgotPasswordFormProps {
@@ -9,17 +10,18 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: ForgotPasswordFormProps) {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const validate = (): boolean => {
     if (!email.trim()) {
-      setValidationError('Email is required');
+      setValidationError(t('validation.emailRequired'));
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setValidationError('Please enter a valid email address');
+      setValidationError(t('validation.emailInvalid'));
       return false;
     }
     setValidationError(null);
@@ -49,14 +51,14 @@ export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: Forgo
         </div>
 
         <div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Check Your Email</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">{t('checkYourEmail')}</h2>
           <p className="text-gray-600">
-            If an account exists with <span className="font-medium">{email}</span>, we've sent password reset instructions.
+            {t('resetEmailSentPlain', { email })}
           </p>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
-          <p>Don't see the email? Check your spam folder.</p>
+          <p>{t('checkSpam')}</p>
         </div>
 
         <button
@@ -64,7 +66,7 @@ export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: Forgo
           className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
         >
           <ArrowLeft size={18} />
-          Back to sign in
+          {t('backToSignIn')}
         </button>
       </div>
     );
@@ -77,13 +79,13 @@ export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: Forgo
         <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-xl mb-3">
           <Mail className="w-6 h-6 text-indigo-600" />
         </div>
-        <h2 className="text-xl font-bold text-gray-800">Forgot Password?</h2>
-        <p className="text-sm text-gray-500">No worries! Enter your email and we'll send you reset instructions.</p>
+        <h2 className="text-xl font-bold text-gray-800">{t('forgotPasswordTitle')}</h2>
+        <p className="text-sm text-gray-500">{t('forgotPasswordDesc')}</p>
       </div>
 
       <div>
         <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-2">
-          Email Address
+          {t('form.emailAddress')}
         </label>
         <input
           id="forgot-email"
@@ -94,7 +96,7 @@ export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: Forgo
             setValidationError(null);
           }}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="your.email@example.com"
+          placeholder={t('placeholder.email')}
           disabled={isLoading}
           autoComplete="email"
           autoFocus
@@ -115,12 +117,12 @@ export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: Forgo
         {isLoading ? (
           <>
             <Loader2 size={20} className="animate-spin" />
-            Sending...
+            {t('sending')}
           </>
         ) : (
           <>
             <Mail size={20} />
-            Send Reset Link
+            {t('sendResetLink')}
           </>
         )}
       </button>
@@ -133,13 +135,13 @@ export function ForgotPasswordForm({ onSubmit, onBack, isLoading, error }: Forgo
           disabled={isLoading}
         >
           <ArrowLeft size={18} />
-          Back to sign in
+          {t('backToSignIn')}
         </button>
       </div>
 
       <div className="text-center text-xs text-gray-500 pt-2">
-        <p>Only parent accounts have email-based password recovery.</p>
-        <p>Students should ask their parent to reset their password.</p>
+        <p>{t('parentOnlyRecovery')}</p>
+        <p>{t('studentAskParent')}</p>
       </div>
     </form>
   );

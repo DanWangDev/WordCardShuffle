@@ -21,7 +21,8 @@ router.get('/', (req: AuthRequest, res: Response) => {
 
     const response: UserSettings = {
       soundEnabled: settings.sound_enabled === 1,
-      autoAdvance: settings.auto_advance === 1
+      autoAdvance: settings.auto_advance === 1,
+      language: settings.language || 'en'
     };
 
     res.json(response);
@@ -36,7 +37,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
 // PUT /api/settings
 router.put('/', validate(updateSettingsSchema), (req: AuthRequest, res: Response) => {
   try {
-    const { soundEnabled, autoAdvance } = req.body as UpdateSettingsRequest;
+    const { soundEnabled, autoAdvance, language } = req.body as UpdateSettingsRequest;
 
     // Auto-create settings if they don't exist before updating
     if (!settingsRepository.get(req.user!.userId)) {
@@ -46,12 +47,14 @@ router.put('/', validate(updateSettingsSchema), (req: AuthRequest, res: Response
     const settings = settingsRepository.update(
       req.user!.userId,
       soundEnabled,
-      autoAdvance
+      autoAdvance,
+      language
     );
 
     const response: UserSettings = {
       soundEnabled: settings.sound_enabled === 1,
-      autoAdvance: settings.auto_advance === 1
+      autoAdvance: settings.auto_advance === 1,
+      language: settings.language || 'en'
     };
 
     res.json(response);

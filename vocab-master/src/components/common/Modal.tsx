@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -26,6 +27,7 @@ export function Modal({
   size = 'md',
   showCloseButton = true,
 }: ModalProps) {
+  const { t } = useTranslation('common');
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -86,7 +88,7 @@ export function Modal({
                   <button
                     onClick={onClose}
                     className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    aria-label="Close modal"
+                    aria-label={t('closeModal')}
                   >
                     <X className="w-5 h-5 text-gray-500" />
                   </button>

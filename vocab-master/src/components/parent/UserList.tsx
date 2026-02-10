@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, Trophy, Clock, Flame, Calendar, KeyRound } from 'lucide-react';
 import type { AdminUserStats } from '../../services/ApiService';
+import { formatDate } from '../../utils/formatters';
 
 interface UserListProps {
     users: AdminUserStats[];
@@ -9,8 +11,10 @@ interface UserListProps {
 }
 
 export function UserList({ users, onSelectUser, onResetPassword }: UserListProps) {
+    const { t, i18n } = useTranslation('parent');
+
     if (users.length === 0) {
-        return <div className="text-center text-gray-500 py-8">No users found.</div>;
+        return <div className="text-center text-gray-500 py-8">{t('noUsersFound')}</div>;
     }
 
     return (
@@ -34,7 +38,7 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                                     {user.display_name || user.username}
                                 </h3>
                                 <p className="text-xs text-gray-500">
-                                    Joined {new Date(user.created_at).toLocaleDateString()}
+                                    {t('joined', { date: formatDate(user.created_at, i18n.language) })}
                                 </p>
                             </div>
                         </div>
@@ -45,7 +49,7 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                                     onResetPassword(user);
                                 }}
                                 className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                                title="Reset Password"
+                                title={t('resetPassword')}
                             >
                                 <KeyRound className="w-4 h-4" />
                             </button>
@@ -55,23 +59,23 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <Flame className="w-3 h-3" /> Streak
+                                <Flame className="w-3 h-3" /> {t('streak')}
                             </span>
                             <span className={`font-semibold ${user.current_streak > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
-                                {user.current_streak > 0 ? `${user.current_streak} day${user.current_streak > 1 ? 's' : ''}` : '-'}
+                                {user.current_streak > 0 ? t('days', { count: user.current_streak }) : '-'}
                             </span>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <Calendar className="w-3 h-3" /> This Week
+                                <Calendar className="w-3 h-3" /> {t('thisWeek')}
                             </span>
                             <span className={`font-semibold ${user.sessions_this_week > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
-                                {user.sessions_this_week > 0 ? `${user.sessions_this_week} session${user.sessions_this_week > 1 ? 's' : ''}` : '-'}
+                                {user.sessions_this_week > 0 ? t('sessions', { count: user.sessions_this_week }) : '-'}
                             </span>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <Trophy className="w-3 h-3" /> Accuracy
+                                <Trophy className="w-3 h-3" /> {t('accuracy')}
                             </span>
                             <span className="font-semibold text-gray-700">
                                 {user.avg_accuracy ? `${Math.round(user.avg_accuracy)}%` : '-'}
@@ -79,20 +83,20 @@ export function UserList({ users, onSelectUser, onResetPassword }: UserListProps
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <BookOpen className="w-3 h-3" /> Studied
+                                <BookOpen className="w-3 h-3" /> {t('studied')}
                             </span>
                             <span className="font-semibold text-gray-700">
-                                {user.total_words_studied} words
+                                {t('wordsStudied', { count: user.total_words_studied })}
                             </span>
                         </div>
                         <div className="col-span-2 flex flex-col gap-1 mt-1 pt-3 border-t border-gray-50">
                             <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> Last Active
+                                <Clock className="w-3 h-3" /> {t('lastActive')}
                             </span>
                             <span className="text-sm text-gray-600">
                                 {user.last_study_date
-                                    ? new Date(user.last_study_date).toLocaleDateString()
-                                    : 'Never'}
+                                    ? formatDate(user.last_study_date, i18n.language)
+                                    : t('never')}
                             </span>
                         </div>
                     </div>

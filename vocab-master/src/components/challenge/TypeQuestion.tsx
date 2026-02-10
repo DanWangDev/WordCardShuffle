@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Send, Check, X } from 'lucide-react';
 import { Button } from '../common';
@@ -21,6 +22,7 @@ export function TypeQuestion({
   userAnswer,
   disabled,
 }: TypeQuestionProps) {
+  const { t } = useTranslation('challenge');
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,7 +55,7 @@ export function TypeQuestion({
       {/* Prompt */}
       <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-          {question.promptType === 'synonym' ? 'Synonym' : 'Definition'}
+          {question.promptType === 'synonym' ? t('synonym') : t('definition')}
         </p>
         <p className="text-lg sm:text-xl text-gray-800 font-medium">
           {question.prompt}
@@ -69,7 +71,7 @@ export function TypeQuestion({
             value={showResult ? (userAnswer || '') : inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={disabled || showResult}
-            placeholder="Type the word..."
+            placeholder={t('typeTheWord')}
             autoComplete="off"
             autoCapitalize="off"
             spellCheck="false"
@@ -115,7 +117,7 @@ export function TypeQuestion({
             className="p-4 bg-green-50 rounded-xl border border-green-200"
           >
             <p className="text-sm text-green-600 font-medium">
-              Correct answer:
+              {t('correctAnswer')}
             </p>
             <p className="text-lg text-green-700 font-bold">
               {question.correctAnswer}
@@ -132,7 +134,7 @@ export function TypeQuestion({
             disabled={!inputValue.trim() || disabled}
           >
             <Send className="w-5 h-5" />
-            Submit Answer
+            {t('submitAnswerSimple')}
           </Button>
         )}
       </form>

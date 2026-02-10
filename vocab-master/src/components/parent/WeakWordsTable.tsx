@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface WeakWordsTableProps {
     words: {
@@ -9,10 +10,12 @@ interface WeakWordsTableProps {
 }
 
 export function WeakWordsTable({ words }: WeakWordsTableProps) {
+    const { t } = useTranslation('parent');
+
     if (!words || words.length === 0) {
         return (
             <div className="text-center py-8 bg-gray-50 rounded-lg text-gray-500">
-                No weak words identified yet. Great job!
+                {t('noWeakWords')}
             </div>
         );
     }
@@ -22,9 +25,9 @@ export function WeakWordsTable({ words }: WeakWordsTableProps) {
             <table className="w-full text-sm text-left">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                     <tr>
-                        <th className="px-4 py-3 rounded-l-lg">Word</th>
-                        <th className="px-4 py-3">Error Rate</th>
-                        <th className="px-4 py-3 rounded-r-lg">Attempts</th>
+                        <th className="px-4 py-3 rounded-l-lg">{t('word')}</th>
+                        <th className="px-4 py-3">{t('errorRate')}</th>
+                        <th className="px-4 py-3 rounded-r-lg">{t('attempts')}</th>
                     </tr>
                 </thead>
                 <tbody>

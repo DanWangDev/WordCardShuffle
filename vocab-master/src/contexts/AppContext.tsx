@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import i18n from '../i18n';
 import type { AppState, AppMode, UserSettings, UserStats, VocabularyWord } from '../types';
 import { StorageService } from '../services/StorageService';
 import ApiService from '../services/ApiService';
@@ -151,6 +152,12 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
         payload: { settings, stats },
       });
 
+      // Sync i18n language with user settings
+      if (settings.language && settings.language !== i18n.language) {
+        i18n.changeLanguage(settings.language);
+        localStorage.setItem('vocab_master_language', settings.language);
+      }
+
       // Also update localStorage as cache
       StorageService.saveSettings(settings);
       StorageService.saveStats(stats);
@@ -185,6 +192,12 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
 
   // Update settings with API sync
   const updateSettings = useCallback(async (settings: Partial<UserSettings>) => {
+    // Sync language change to i18n
+    if (settings.language && settings.language !== i18n.language) {
+      i18n.changeLanguage(settings.language);
+      localStorage.setItem('vocab_master_language', settings.language);
+    }
+
     // Optimistically update local state
     dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
 

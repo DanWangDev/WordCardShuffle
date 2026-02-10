@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { X, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '../common';
@@ -11,6 +12,7 @@ interface DeleteConfirmModalProps {
 }
 
 export function DeleteConfirmModal({ userName, userRole, onConfirm, onClose }: DeleteConfirmModalProps) {
+    const { t } = useTranslation('admin');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +43,7 @@ export function DeleteConfirmModal({ userName, userRole, onConfirm, onClose }: D
                         <div className="p-2 bg-red-100 rounded-full">
                             <AlertTriangle className="w-5 h-5 text-red-600" />
                         </div>
-                        <h2 className="text-lg font-bold text-gray-900">Delete User</h2>
+                        <h2 className="text-lg font-bold text-gray-900">{t('deleteUser')}</h2>
                     </div>
                     <button
                         onClick={onClose}
@@ -55,24 +57,24 @@ export function DeleteConfirmModal({ userName, userRole, onConfirm, onClose }: D
                 {/* Content */}
                 <div className="p-6">
                     <p className="text-gray-600 mb-4">
-                        Are you sure you want to delete <span className="font-semibold text-gray-900">{userName}</span>?
+                        {t('deleteConfirmPlain', { name: userName })}
                     </p>
 
                     <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-4">
-                        <p className="text-sm text-red-800 font-medium mb-2">This action will permanently delete:</p>
+                        <p className="text-sm text-red-800 font-medium mb-2">{t('deleteWarning')}</p>
                         <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
-                            <li>User account and login credentials</li>
-                            <li>All quiz results and answers</li>
-                            <li>All study session history</li>
-                            <li>Daily challenge records</li>
+                            <li>{t('deleteItem.account')}</li>
+                            <li>{t('deleteItem.quizResults')}</li>
+                            <li>{t('deleteItem.studyHistory')}</li>
+                            <li>{t('deleteItem.challengeRecords')}</li>
                             {userRole === 'parent' && (
-                                <li>Parent links to any students (students will be unlinked)</li>
+                                <li>{t('deleteItem.parentLinks')}</li>
                             )}
                         </ul>
                     </div>
 
                     <p className="text-sm text-gray-500">
-                        This action cannot be undone.
+                        {t('deleteCannotUndo')}
                     </p>
 
                     {error && (
@@ -99,10 +101,10 @@ export function DeleteConfirmModal({ userName, userRole, onConfirm, onClose }: D
                         {loading ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Deleting...
+                                {t('deleting')}
                             </>
                         ) : (
-                            'Delete User'
+                            t('deleteUser')
                         )}
                     </button>
                 </div>

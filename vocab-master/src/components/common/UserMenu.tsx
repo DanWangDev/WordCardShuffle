@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, LogOut, ChevronDown, Cloud } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function UserMenu() {
+  const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { state: authState, logout } = useAuth();
@@ -76,14 +79,19 @@ export function UserMenu() {
               {appState.isSyncing ? (
                 <>
                   <Cloud size={16} className="text-primary-500 animate-pulse" />
-                  <span className="text-sm text-primary-600 font-medium">Syncing...</span>
+                  <span className="text-sm text-primary-600 font-medium">{t('syncing')}</span>
                 </>
               ) : (
                 <>
                   <Cloud size={16} className="text-study" />
-                  <span className="text-sm text-study font-medium">Synced</span>
+                  <span className="text-sm text-study font-medium">{t('synced')}</span>
                 </>
               )}
+            </div>
+
+            {/* Language */}
+            <div className="px-4 py-2 border-b border-primary-100 flex items-center justify-between">
+              <LanguageSwitcher />
             </div>
 
             {/* Menu items */}
@@ -94,7 +102,7 @@ export function UserMenu() {
                 disabled={appState.isSyncing}
               >
                 <LogOut size={16} />
-                Sign out
+                {t('signOut')}
               </button>
             </div>
           </motion.div>

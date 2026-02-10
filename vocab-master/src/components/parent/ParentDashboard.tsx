@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, LayoutDashboard, UserPlus, X, Clock, Loader2 } from 'lucide-react';
 import { Button } from '../common';
@@ -13,6 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 
 export function ParentDashboard() {
+    const { t } = useTranslation('parent');
     const { logout } = useAuth();
     const navigate = useNavigate();
     const { linkRequests, cancelLinkRequest, refreshAll } = useNotifications();
@@ -70,16 +72,16 @@ export function ParentDashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <LayoutDashboard className="w-6 h-6 text-purple-600" />
-                        <h1 className="text-xl font-bold text-gray-900">Parent Dashboard</h1>
+                        <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
                     </div>
                     <div className="flex items-center gap-4">
                         <NotificationBell />
                         <Button variant="ghost" onClick={handleLogout} className="text-sm">
                             <LogOut className="w-4 h-4" />
-                            Log Out
+                            {t('logOut')}
                         </Button>
                         <Button variant="outline" onClick={handleBack}>
-                            Exit to App
+                            {t('exitToApp')}
                         </Button>
                     </div>
                 </div>
@@ -92,15 +94,15 @@ export function ParentDashboard() {
                 >
                     <div className="mb-8 flex items-start justify-between">
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-900">Student Overview</h2>
-                            <p className="text-gray-500">Select a student to view detailed progress reports.</p>
+                            <h2 className="text-2xl font-bold text-gray-900">{t('studentOverview')}</h2>
+                            <p className="text-gray-500">{t('studentOverviewDesc')}</p>
                         </div>
                         <Button
                             onClick={() => setShowLinkModal(true)}
                             className="flex items-center gap-2"
                         >
                             <UserPlus className="w-4 h-4" />
-                            Link Student
+                            {t('linkStudent')}
                         </Button>
                     </div>
 
@@ -109,7 +111,7 @@ export function ParentDashboard() {
                         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                             <h3 className="text-sm font-semibold text-yellow-800 mb-3 flex items-center gap-2">
                                 <Clock className="w-4 h-4" />
-                                Pending Link Requests
+                                {t('pendingLinkRequests')}
                             </h3>
                             <div className="space-y-2">
                                 {linkRequests.map(request => (
@@ -135,7 +137,7 @@ export function ParentDashboard() {
                                             ) : (
                                                 <X className="w-4 h-4" />
                                             )}
-                                            Cancel
+                                            {t('cancelRequest')}
                                         </button>
                                     </div>
                                 ))}

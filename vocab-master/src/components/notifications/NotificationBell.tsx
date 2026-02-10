@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { NotificationDropdown } from './NotificationDropdown';
 
 export function NotificationBell() {
+  const { t } = useTranslation('notifications');
   const [isOpen, setIsOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
   const { unreadCount } = useNotifications();
@@ -26,7 +28,7 @@ export function NotificationBell() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 bg-white border-2 border-primary-200 rounded-xl shadow-clay-sm hover:shadow-clay transition-all duration-200 cursor-pointer"
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+        aria-label={unreadCount > 0 ? t('unreadCount', { count: unreadCount }) : t('title')}
       >
         <Bell size={20} className="text-primary-600" />
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { X, Save, Shield, User, GraduationCap, Mail } from 'lucide-react';
 import { Button } from '../common';
@@ -11,6 +12,7 @@ interface AddUserModalProps {
 }
 
 export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
+    const { t } = useTranslation('admin');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -23,12 +25,12 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
 
     const handleSave = async () => {
         if (!username || !password) {
-            setError('Username and password are required');
+            setError(t('validation.usernamePasswordRequired'));
             return;
         }
 
         if (role === 'parent' && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setError('Please enter a valid email address');
+            setError(t('validation.emailInvalid'));
             return;
         }
 
@@ -61,7 +63,7 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
                 className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
             >
                 <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                    <h2 className="text-xl font-bold text-gray-900">Add New User</h2>
+                    <h2 className="text-xl font-bold text-gray-900">{t('addNewUser')}</h2>
                     <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
                         <X className="w-5 h-5" />
                     </button>
@@ -75,29 +77,29 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('form.username')}</label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="Enter username"
+                            placeholder={t('placeholder.username')}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('form.password')}</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="Enter password"
+                            placeholder={t('placeholder.password')}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('form.role')}</label>
                         <div className="grid grid-cols-3 gap-2">
                             {(['student', 'parent', 'admin'] as const).map((r) => (
                                 <button
@@ -126,7 +128,7 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 <span className="flex items-center gap-1">
                                     <Mail className="w-4 h-4" />
-                                    Email Address
+                                    {t('form.emailAddress')}
                                 </span>
                             </label>
                             <input
@@ -134,28 +136,28 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                placeholder="parent@example.com"
+                                placeholder={t('placeholder.email')}
                             />
-                            <p className="text-xs text-gray-500 mt-1">Required for password reset via email.</p>
+                            <p className="text-xs text-gray-500 mt-1">{t('hint.emailRequired')}</p>
                         </div>
                     )}
 
                     {role === 'student' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Parent</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('form.assignedParent')}</label>
                             <select
                                 value={parentId || ''}
                                 onChange={(e) => setParentId(e.target.value ? Number(e.target.value) : null)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             >
-                                <option value="">-- No Parent Assigned --</option>
+                                <option value="">{t('noParentAssigned')}</option>
                                 {parents.map(p => (
                                     <option key={p.id} value={p.id}>
                                         {p.display_name || p.username}
                                     </option>
                                 ))}
                             </select>
-                            <p className="text-xs text-gray-500 mt-1">Assigning a parent allows them to view this student's progress.</p>
+                            <p className="text-xs text-gray-500 mt-1">{t('hint.parentAccess')}</p>
                         </div>
                     )}
                 </div>
@@ -163,7 +165,7 @@ export function AddUserModal({ allUsers, onClose, onSave }: AddUserModalProps) {
                 <div className="p-6 bg-gray-50 flex justify-end gap-3">
                     <Button variant="ghost" onClick={onClose}>Cancel</Button>
                     <Button variant="primary" onClick={handleSave} disabled={loading}>
-                        {loading ? 'Creating...' : 'Create User'}
+                        {loading ? t('creating') : t('createUser')}
                         {!loading && <Save className="w-4 h-4 ml-2" />}
                     </Button>
                 </div>

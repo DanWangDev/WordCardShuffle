@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
@@ -12,6 +13,7 @@ import { useStudyMode } from '../../hooks/useStudyMode';
 import { useAudio } from '../../hooks/useAudio';
 
 export function StudyMode() {
+  const { t } = useTranslation('study');
   const { vocabulary, dispatch, state, loadUserData } = useApp();
   const { playFlip, playClick } = useAudio();
   const navigate = useNavigate();
@@ -105,7 +107,7 @@ export function StudyMode() {
   if (!currentCard) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">No vocabulary words available.</p>
+        <p className="text-gray-500">{t('noVocabulary')}</p>
       </div>
     );
   }
@@ -114,13 +116,13 @@ export function StudyMode() {
     <div className="min-h-screen bg-gradient-to-b from-study-light/30 to-gray-50">
       <TopBar
         onBack={handleBack}
-        title={`Card ${currentIndex + 1}/${totalCards}`}
+        title={t('cardCount', { current: currentIndex + 1, total: totalCards })}
         rightContent={
           <div className="flex items-center gap-3">
             <button
               onClick={handleReset}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Shuffle deck"
+              aria-label={t('shuffleDeck')}
             >
               <RotateCcw className="w-5 h-5 text-gray-600" />
             </button>
@@ -156,7 +158,7 @@ export function StudyMode() {
                 : 'text-gray-700 hover:bg-gray-50'
               }
             `}
-            aria-label="Previous card"
+            aria-label={t('previousCard')}
           >
             <ChevronLeft className="w-6 h-6 lg:w-8 lg:h-8" />
           </motion.button>
@@ -184,7 +186,7 @@ export function StudyMode() {
                 : 'text-gray-700 hover:bg-gray-50'
               }
             `}
-            aria-label="Next card"
+            aria-label={t('nextCard')}
           >
             <ChevronRight className="w-6 h-6 lg:w-8 lg:h-8" />
           </motion.button>

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { BookOpen, Eye, EyeOff, Loader2, CheckCircle, XCircle, KeyRound } from 'lucide-react';
 import ApiService from '../../services/ApiService';
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation('auth');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -46,15 +48,15 @@ export function ResetPasswordPage() {
 
     // Validation
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('validation.passwordMin'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('validation.passwordsNoMatch'));
       return;
     }
     if (!token) {
-      setError('Invalid reset token');
+      setError(t('validation.invalidToken'));
       return;
     }
 
@@ -63,7 +65,7 @@ export function ResetPasswordPage() {
       await ApiService.resetPassword(token, password);
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Password reset failed');
+      setError(err instanceof Error ? err.message : t('passwordResetFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +81,7 @@ export function ResetPasswordPage() {
           className="w-full max-w-md text-center"
         >
           <Loader2 size={48} className="animate-spin text-white mx-auto mb-4" />
-          <p className="text-white text-lg font-medium">Validating reset link...</p>
+          <p className="text-white text-lg font-medium">{t('validatingLink')}</p>
         </motion.div>
       </div>
     );
@@ -98,15 +100,15 @@ export function ResetPasswordPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Invalid or Expired Link</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('invalidOrExpiredLink')}</h2>
             <p className="text-gray-600 mb-6">
-              This password reset link is invalid or has expired. Please request a new one.
+              {t('invalidOrExpiredDesc')}
             </p>
             <button
               onClick={() => navigate('/login')}
               className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors"
             >
-              Back to Sign In
+              {t('backToSignInButton')}
             </button>
           </div>
         </motion.div>
@@ -127,15 +129,15 @@ export function ResetPasswordPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Password Reset Complete!</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('passwordResetComplete')}</h2>
             <p className="text-gray-600 mb-6">
-              Your password has been successfully changed. You can now sign in with your new password.
+              {t('passwordResetSuccess')}
             </p>
             <button
               onClick={() => navigate('/login')}
               className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors"
             >
-              Sign In
+              {t('signIn')}
             </button>
           </div>
         </motion.div>
@@ -162,7 +164,7 @@ export function ResetPasswordPage() {
             <BookOpen size={40} className="text-indigo-600 drop-shadow-sm" strokeWidth={2.5} />
           </motion.div>
           <h1 className="text-3xl font-black text-white mb-2 drop-shadow-md tracking-tight">
-            Vocabulary Master
+            {t('appName')}
           </h1>
         </div>
 
@@ -176,13 +178,13 @@ export function ResetPasswordPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-xl mb-3">
                 <KeyRound className="w-6 h-6 text-indigo-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800">Reset Your Password</h2>
-              <p className="text-sm text-gray-500">Enter your new password below.</p>
+              <h2 className="text-xl font-bold text-gray-800">{t('resetYourPassword')}</h2>
+              <p className="text-sm text-gray-500">{t('resetYourPasswordDesc')}</p>
             </div>
 
             <div>
               <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-2">
-                New Password
+                {t('form.newPassword')}
               </label>
               <div className="relative">
                 <input
@@ -194,7 +196,7 @@ export function ResetPasswordPage() {
                     setError(null);
                   }}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all pr-12"
-                  placeholder="Enter new password"
+                  placeholder={t('placeholder.newPassword')}
                   disabled={isSubmitting}
                   autoComplete="new-password"
                   autoFocus
@@ -208,12 +210,12 @@ export function ResetPasswordPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">At least 6 characters</p>
+              <p className="mt-1 text-xs text-gray-500">{t('hint.minPassword')}</p>
             </div>
 
             <div>
               <label htmlFor="confirm-new-password" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm New Password
+                {t('form.confirmNewPassword')}
               </label>
               <input
                 id="confirm-new-password"
@@ -224,7 +226,7 @@ export function ResetPasswordPage() {
                   setError(null);
                 }}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="Confirm new password"
+                placeholder={t('placeholder.confirmNewPassword')}
                 disabled={isSubmitting}
                 autoComplete="new-password"
               />
@@ -244,12 +246,12 @@ export function ResetPasswordPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
-                  Resetting...
+                  {t('resetting')}
                 </>
               ) : (
                 <>
                   <KeyRound size={20} />
-                  Reset Password
+                  {t('resetPassword')}
                 </>
               )}
             </button>

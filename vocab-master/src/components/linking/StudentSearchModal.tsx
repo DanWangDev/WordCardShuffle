@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, UserPlus, Check, Clock, Loader2 } from 'lucide-react';
 import { Modal } from '../common/Modal';
@@ -23,6 +24,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearchModalProps) {
+  const { t } = useTranslation('linking');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<StudentSearchResult[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<StudentSearchResult | null>(null);
@@ -104,21 +106,21 @@ export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearch
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-study bg-study/10 rounded-full">
             <Check size={12} />
-            Available
+            {t('available')}
           </span>
         );
       case 'pending':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">
             <Clock size={12} />
-            Pending
+            {t('pending')}
           </span>
         );
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Link Student Account" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('linkStudentAccount')} size="md">
       {success ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -128,10 +130,9 @@ export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearch
           <div className="w-16 h-16 mx-auto mb-4 bg-study/10 rounded-full flex items-center justify-center">
             <Check size={32} className="text-study" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Request Sent!</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">{t('requestSent')}</h3>
           <p className="text-gray-600">
-            Your link request has been sent to {selectedStudent?.displayName || selectedStudent?.username}.
-            They will receive a notification.
+            {t('requestSentDesc', { name: selectedStudent?.displayName || selectedStudent?.username })}
           </p>
         </motion.div>
       ) : (
@@ -143,7 +144,7 @@ export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearch
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by student username..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors"
               autoFocus
             />
@@ -164,13 +165,13 @@ export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearch
             <div className="max-h-60 overflow-y-auto">
               {query.length > 0 && query.length < 2 && (
                 <p className="text-center text-gray-500 py-4 text-sm">
-                  Type at least 2 characters to search
+                  {t('minCharsToSearch')}
                 </p>
               )}
 
               {debouncedQuery.length >= 2 && !searching && results.length === 0 && (
                 <p className="text-center text-gray-500 py-4 text-sm">
-                  No students found matching "{debouncedQuery}"
+                  {t('noStudentsFound', { query: debouncedQuery })}
                 </p>
               )}
 
@@ -233,12 +234,12 @@ export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearch
               {/* Optional message */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message (optional)
+                  {t('messageOptional')}
                 </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Add a message to your request..."
+                  placeholder={t('messagePlaceholder')}
                   maxLength={500}
                   rows={3}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors resize-none"
@@ -257,12 +258,12 @@ export function StudentSearchModal({ isOpen, onClose, onSuccess }: StudentSearch
                 {sending ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    Sending...
+                    {t('sending')}
                   </>
                 ) : (
                   <>
                     <UserPlus size={18} />
-                    Send Link Request
+                    {t('sendLinkRequest')}
                   </>
                 )}
               </button>

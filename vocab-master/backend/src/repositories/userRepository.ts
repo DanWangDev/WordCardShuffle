@@ -13,8 +13,8 @@ export const userRepository = {
 
     // Create default settings and stats for the user
     db.prepare(`
-      INSERT INTO user_settings (user_id, sound_enabled, auto_advance)
-      VALUES (?, 1, 0)
+      INSERT INTO user_settings (user_id, sound_enabled, auto_advance, language)
+      VALUES (?, 1, 0, 'en')
     `).run(userId);
 
     db.prepare(`
@@ -54,8 +54,8 @@ export const userRepository = {
 
     // Create default settings and stats
     db.prepare(`
-      INSERT INTO user_settings (user_id, sound_enabled, auto_advance)
-      VALUES (?, 1, 0)
+      INSERT INTO user_settings (user_id, sound_enabled, auto_advance, language)
+      VALUES (?, 1, 0, 'en')
     `).run(userId);
 
     db.prepare(`
@@ -80,8 +80,8 @@ export const userRepository = {
 
     // Create default settings and stats
     db.prepare(`
-      INSERT INTO user_settings (user_id, sound_enabled, auto_advance)
-      VALUES (?, 1, 0)
+      INSERT INTO user_settings (user_id, sound_enabled, auto_advance, language)
+      VALUES (?, 1, 0, 'en')
     `).run(userId);
 
     db.prepare(`
@@ -159,14 +159,14 @@ export const settingsRepository = {
 
   createDefault(userId: number): UserSettingsRow {
     const stmt = db.prepare(`
-      INSERT INTO user_settings (user_id, sound_enabled, auto_advance)
-      VALUES (?, 1, 0)
+      INSERT INTO user_settings (user_id, sound_enabled, auto_advance, language)
+      VALUES (?, 1, 0, 'en')
     `);
     stmt.run(userId);
     return this.get(userId)!;
   },
 
-  update(userId: number, soundEnabled?: boolean, autoAdvance?: boolean): UserSettingsRow {
+  update(userId: number, soundEnabled?: boolean, autoAdvance?: boolean, language?: string): UserSettingsRow {
     const current = this.get(userId);
     if (!current) {
       throw new Error('Settings not found for user');
@@ -174,13 +174,14 @@ export const settingsRepository = {
 
     const newSoundEnabled = soundEnabled !== undefined ? (soundEnabled ? 1 : 0) : current.sound_enabled;
     const newAutoAdvance = autoAdvance !== undefined ? (autoAdvance ? 1 : 0) : current.auto_advance;
+    const newLanguage = language !== undefined ? language : current.language;
 
     const stmt = db.prepare(`
       UPDATE user_settings
-      SET sound_enabled = ?, auto_advance = ?
+      SET sound_enabled = ?, auto_advance = ?, language = ?
       WHERE user_id = ?
     `);
-    stmt.run(newSoundEnabled, newAutoAdvance, userId);
+    stmt.run(newSoundEnabled, newAutoAdvance, newLanguage, userId);
 
     return this.get(userId)!;
   }

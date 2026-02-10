@@ -1,6 +1,7 @@
 export interface UserSettings {
   soundEnabled: boolean;
   autoAdvance: boolean;
+  language: string;
 }
 
 export interface UserStats {

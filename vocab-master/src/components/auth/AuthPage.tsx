@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { LoginForm } from './LoginForm';
 import { RoleSelection } from './RoleSelection';
 import { StudentRegisterForm } from './StudentRegisterForm';
@@ -18,6 +20,7 @@ interface LocationState {
 }
 
 export function AuthPage() {
+  const { t } = useTranslation('auth');
   const [mode, setMode] = useState<AuthMode>('login');
   const { state, login, registerStudent, registerParent, forgotPassword, clearError } = useAuth();
   const navigate = useNavigate();
@@ -76,22 +79,27 @@ export function AuthPage() {
   const getSubtitle = () => {
     switch (mode) {
       case 'login':
-        return 'Welcome back, superstar!';
+        return t('subtitle.login');
       case 'register-select-role':
-        return 'Join the fun!';
+        return t('subtitle.registerSelectRole');
       case 'register-student':
-        return 'Time to learn!';
+        return t('subtitle.registerStudent');
       case 'register-parent':
-        return 'Track progress!';
+        return t('subtitle.registerParent');
       case 'forgot-password':
-        return "We'll help you out!";
+        return t('subtitle.forgotPassword');
       default:
         return '';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4 background-pattern">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4 background-pattern relative">
+      {/* Language switcher for unauthenticated users */}
+      <div className="absolute top-4 right-4 z-10 text-white">
+        <LanguageSwitcher compact />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -108,7 +116,7 @@ export function AuthPage() {
             <BookOpen size={40} className="text-indigo-600 drop-shadow-sm" strokeWidth={2.5} />
           </motion.div>
           <h1 className="text-3xl font-black text-white mb-2 drop-shadow-md tracking-tight">
-            Vocabulary Master
+            {t('appName')}
           </h1>
           <p className="text-indigo-100 font-medium text-lg">
             {getSubtitle()}
@@ -181,7 +189,7 @@ export function AuthPage() {
 
         {/* Footer */}
         <p className="text-center text-indigo-100 text-sm mt-8 font-medium opacity-80">
-          Your progress is saved automatically and synced across devices.
+          {t('footer')}
         </p>
       </motion.div>
     </div>

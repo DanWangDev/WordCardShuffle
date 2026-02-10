@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Trophy, Star, Zap, Home } from 'lucide-react';
 import { Button, Card } from '../common';
@@ -10,6 +11,7 @@ interface ChallengeResultsProps {
 }
 
 export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
+  const { t } = useTranslation('challenge');
   const correctCount = state.answers.filter(a => a.isCorrect).length;
   const percentage = calculatePercentage(correctCount, state.totalQuestions);
   const { grade, color } = getGrade(percentage);
@@ -47,7 +49,7 @@ export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
             transition={{ delay: 0.3 }}
             className="text-2xl font-bold text-gray-900 mb-2"
           >
-            Challenge Complete!
+            {t('challengeComplete')}
           </motion.h2>
 
           <motion.div
@@ -73,7 +75,7 @@ export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
                 {state.pointsEarned}
               </span>
             </div>
-            <p className="text-xs text-challenge-dark font-medium">Total Points</p>
+            <p className="text-xs text-challenge-dark font-medium">{t('totalPoints')}</p>
           </motion.div>
 
           <motion.div
@@ -100,7 +102,7 @@ export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
           className="text-center p-4 bg-gray-50 rounded-xl mb-6"
         >
           <p className="text-4xl font-bold text-gray-900">{percentage}%</p>
-          <p className="text-sm text-gray-500">Accuracy</p>
+          <p className="text-sm text-gray-500">{t('accuracy')}</p>
         </motion.div>
 
         {/* Words to review */}
@@ -112,7 +114,7 @@ export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
             className="mb-6"
           >
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Words to Review
+              {t('wordsToReview')}
             </h3>
             <div className="flex flex-wrap gap-2">
               {incorrectWords.map((word, index) => (
@@ -139,7 +141,7 @@ export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
             className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200"
           >
             <p className="text-center text-green-700 font-semibold">
-              Perfect Score! You're a vocabulary master!
+              {t('perfectScore')}
             </p>
           </motion.div>
         )}
@@ -152,10 +154,10 @@ export function ChallengeResults({ state, onHome }: ChallengeResultsProps) {
         >
           <Button variant="challenge" fullWidth onClick={onHome}>
             <Home className="w-5 h-5" />
-            Back to Home
+            {t('backToHome')}
           </Button>
           <p className="text-center text-xs text-gray-400 mt-3">
-            Come back tomorrow for a new challenge!
+            {t('comeBackTomorrowShort')}
           </p>
         </motion.div>
       </Card>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, CheckCheck, UserPlus, UserCheck, UserX, Award, Clock, Bell } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -8,19 +9,22 @@ interface NotificationDropdownProps {
   onClose: () => void;
 }
 
-function formatTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+function useFormatTimeAgo() {
+  const { t } = useTranslation('notifications');
+  return (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (seconds < 60) return 'Just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString();
+    if (seconds < 60) return t('justNow');
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return t('minutesAgo', { count: minutes });
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t('hoursAgo', { count: hours });
+    const days = Math.floor(hours / 24);
+    if (days < 7) return t('daysAgo', { count: days });
+    return date.toLocaleDateString();
+  };
 }
 
 function getNotificationIcon(type: Notification['type']) {
@@ -49,6 +53,8 @@ interface NotificationItemProps {
 }
 
 function NotificationItem({ notification, onMarkRead, onAccept, onReject, loading }: NotificationItemProps) {
+  const { t } = useTranslation('notifications');
+  const formatTimeAgo = useFormatTimeAgo();
   const isUnread = !notification.readAt;
   const isLinkRequest = notification.type === 'link_request' && !notification.actedAt;
 
@@ -73,7 +79,7 @@ function NotificationItem({ notification, onMarkRead, onAccept, onReject, loadin
               <button
                 onClick={onMarkRead}
                 className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Mark as read"
+                title={t('markAsRead')}
               >
                 <Check size={14} />
               </button>
@@ -101,7 +107,7 @@ function NotificationItem({ notification, onMarkRead, onAccept, onReject, loadin
                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-study hover:bg-study/90 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Check size={14} />
-                Accept
+                {t('accept')}
               </button>
               <button
                 onClick={onReject}
@@ -109,7 +115,7 @@ function NotificationItem({ notification, onMarkRead, onAccept, onReject, loadin
                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
               >
                 <X size={14} />
-                Decline
+                {t('decline')}
               </button>
             </div>
           )}
@@ -120,6 +126,7 @@ function NotificationItem({ notification, onMarkRead, onAccept, onReject, loadin
 }
 
 export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
+  const { t } = useTranslation('notifications');
   const { notifications, markAsRead, markAllAsRead, respondToLinkRequest, unreadCount } = useNotifications();
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
@@ -151,14 +158,14 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-primary-50/50">
-        <h3 className="font-bold text-primary-900">Notifications</h3>
+        <h3 className="font-bold text-primary-900">{t('title')}</h3>
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
             className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors"
           >
             <CheckCheck size={14} />
-            Mark all read
+            {t('markAllRead')}
           </button>
         )}
       </div>
@@ -168,7 +175,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
         {notifications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <Bell size={32} className="mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No notifications yet</p>
+            <p className="text-sm">{t('noNotifications')}</p>
           </div>
         ) : (
           notifications.slice(0, 10).map(notification => {
@@ -204,7 +211,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
             onClick={onClose}
             className="text-sm text-primary-600 hover:text-primary-800 font-medium"
           >
-            View all notifications
+            {t('viewAll')}
           </button>
         </div>
       )}

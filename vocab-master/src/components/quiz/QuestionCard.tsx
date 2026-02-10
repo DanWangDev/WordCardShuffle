@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { OptionButton } from './OptionButton';
 import type { QuizQuestion } from '../../types';
@@ -18,6 +19,7 @@ export function QuestionCard({
   selectedAnswer,
   disabled,
 }: QuestionCardProps) {
+  const { t } = useTranslation('quiz');
   const [localSelected, setLocalSelected] = useState<string | null>(null);
 
   // Reset local selection when question changes
@@ -62,7 +64,7 @@ export function QuestionCard({
       {/* Prompt */}
       <div className="bg-white rounded-clay border-2 border-primary-100 shadow-clay p-5 mb-5">
         <p className="text-xs font-bold text-primary-500 uppercase tracking-wider mb-2">
-          {question.promptType === 'synonym' ? 'Synonym' : 'Definition'}
+          {question.promptType === 'synonym' ? t('synonym') : t('definition')}
         </p>
         <p className="text-lg sm:text-xl text-primary-900 font-semibold leading-relaxed">
           {question.prompt}

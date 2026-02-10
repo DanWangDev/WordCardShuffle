@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, UserPlus, Loader2, ArrowLeft, GraduationCap } from 'lucide-react';
 
 interface StudentRegisterFormProps {
@@ -9,6 +10,7 @@ interface StudentRegisterFormProps {
 }
 
 export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: StudentRegisterFormProps) {
+  const { t } = useTranslation('auth');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,19 +20,19 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
 
   const validate = (): boolean => {
     if (username.length < 3) {
-      setValidationError('Username must be at least 3 characters');
+      setValidationError(t('validation.usernameMin'));
       return false;
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-      setValidationError('Username can only contain letters, numbers, underscores, and hyphens');
+      setValidationError(t('validation.usernameChars'));
       return false;
     }
     if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
+      setValidationError(t('validation.passwordMin'));
       return false;
     }
     if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
+      setValidationError(t('validation.passwordsNoMatch'));
       return false;
     }
     setValidationError(null);
@@ -52,13 +54,13 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
         <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-xl mb-3">
           <GraduationCap className="w-6 h-6 text-indigo-600" />
         </div>
-        <h2 className="text-xl font-bold text-gray-800">Student Account</h2>
-        <p className="text-sm text-gray-500">Simple sign-up, no email needed!</p>
+        <h2 className="text-xl font-bold text-gray-800">{t('studentAccount')}</h2>
+        <p className="text-sm text-gray-500">{t('studentAccountDesc')}</p>
       </div>
 
       <div>
         <label htmlFor="student-username" className="block text-sm font-medium text-gray-700 mb-2">
-          Username
+          {t('form.username')}
         </label>
         <input
           id="student-username"
@@ -69,19 +71,19 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
             setValidationError(null);
           }}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="Pick a cool username"
+          placeholder={t('placeholder.pickUsername')}
           disabled={isLoading}
           autoComplete="username"
           autoFocus
         />
         <p className="mt-1 text-xs text-gray-500">
-          3-30 characters, letters, numbers, underscores, hyphens
+          {t('hint.usernameChars')}
         </p>
       </div>
 
       <div>
         <label htmlFor="student-display-name" className="block text-sm font-medium text-gray-700 mb-2">
-          Your Name <span className="text-gray-400">(optional)</span>
+          {t('form.yourName')} <span className="text-gray-400">{t('form.optional')}</span>
         </label>
         <input
           id="student-display-name"
@@ -89,7 +91,7 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="What's your name?"
+          placeholder={t('placeholder.yourName')}
           disabled={isLoading}
           autoComplete="name"
         />
@@ -97,7 +99,7 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
 
       <div>
         <label htmlFor="student-password" className="block text-sm font-medium text-gray-700 mb-2">
-          Password
+          {t('form.password')}
         </label>
         <div className="relative">
           <input
@@ -109,7 +111,7 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
               setValidationError(null);
             }}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all pr-12"
-            placeholder="Create a secret password"
+            placeholder={t('placeholder.secretPassword')}
             disabled={isLoading}
             autoComplete="new-password"
           />
@@ -122,12 +124,12 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
-        <p className="mt-1 text-xs text-gray-500">At least 6 characters</p>
+        <p className="mt-1 text-xs text-gray-500">{t('hint.minPassword')}</p>
       </div>
 
       <div>
         <label htmlFor="student-confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-          Confirm Password
+          {t('form.confirmPassword')}
         </label>
         <input
           id="student-confirm-password"
@@ -138,7 +140,7 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
             setValidationError(null);
           }}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          placeholder="Type your password again"
+          placeholder={t('placeholder.typePasswordAgain')}
           disabled={isLoading}
           autoComplete="new-password"
         />
@@ -158,12 +160,12 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
         {isLoading ? (
           <>
             <Loader2 size={20} className="animate-spin" />
-            Creating account...
+            {t('creatingAccount')}
           </>
         ) : (
           <>
             <UserPlus size={20} />
-            Create Account
+            {t('createAccount')}
           </>
         )}
       </button>
@@ -176,7 +178,7 @@ export function StudentRegisterForm({ onSubmit, onBack, isLoading, error }: Stud
           disabled={isLoading}
         >
           <ArrowLeft size={18} />
-          Back
+          {t('back')}
         </button>
       </div>
     </form>

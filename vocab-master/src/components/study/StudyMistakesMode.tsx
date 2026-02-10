@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
@@ -17,6 +18,7 @@ interface StudyMistakesModeProps {
 }
 
 export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
+  const { t } = useTranslation('study');
   const { dispatch, state, loadUserData } = useApp();
   const { playFlip, playClick } = useAudio();
   const navigate = useNavigate();
@@ -108,7 +110,7 @@ export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
   if (!currentCard) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">No vocabulary words available.</p>
+        <p className="text-gray-500">{t('noVocabulary')}</p>
       </div>
     );
   }
@@ -120,7 +122,7 @@ export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
         title={
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-orange-500" />
-            <span>Practice Mistakes</span>
+            <span>{t('practiceMistakes')}</span>
             <span className="text-gray-400 font-normal">
               {currentIndex + 1}/{totalCards}
             </span>
@@ -131,7 +133,7 @@ export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
             <button
               onClick={handleReset}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Shuffle deck"
+              aria-label={t('shuffleDeck')}
             >
               <RotateCcw className="w-5 h-5 text-gray-600" />
             </button>
@@ -167,7 +169,7 @@ export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
                 : 'text-gray-700 hover:bg-gray-50'
               }
             `}
-            aria-label="Previous card"
+            aria-label={t('previousCard')}
           >
             <ChevronLeft className="w-6 h-6 lg:w-8 lg:h-8" />
           </motion.button>
@@ -195,7 +197,7 @@ export function StudyMistakesMode({ words }: StudyMistakesModeProps) {
                 : 'text-gray-700 hover:bg-gray-50'
               }
             `}
-            aria-label="Next card"
+            aria-label={t('nextCard')}
           >
             <ChevronRight className="w-6 h-6 lg:w-8 lg:h-8" />
           </motion.button>

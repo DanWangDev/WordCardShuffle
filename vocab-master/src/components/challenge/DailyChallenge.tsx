@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Flame, Trophy } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
@@ -21,6 +22,7 @@ const CHALLENGE_QUESTIONS = 20;
 const TIME_PER_QUESTION = 25;
 
 export function DailyChallenge() {
+  const { t } = useTranslation('challenge');
   const { vocabulary, loadUserData } = useApp();
   const { playSuccess, playError, playClick, playWarning, playComplete } = useAudio();
   const navigate = useNavigate();
@@ -220,7 +222,7 @@ export function DailyChallenge() {
   if (state.status === 'intro') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-challenge-light/30 to-gray-50">
-        <TopBar onBack={handleHome} title="Daily Challenge" />
+        <TopBar onBack={handleHome} title={t('title')} />
 
         <main className="max-w-md mx-auto px-4 py-8">
           <motion.div
@@ -238,42 +240,42 @@ export function DailyChallenge() {
             </motion.div>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Daily Challenge
+              {t('title')}
             </h2>
             <p className="text-gray-500 mb-6">
-              Test your vocabulary skills with 20 timed questions!
+              {t('description')}
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="p-4 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-gray-900">20</p>
-                <p className="text-xs text-gray-500">Questions</p>
+                <p className="text-xs text-gray-500">{t('questions')}</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-gray-900">25s</p>
-                <p className="text-xs text-gray-500">Per Question</p>
+                <p className="text-xs text-gray-500">{t('perQuestion')}</p>
               </div>
             </div>
 
             {state.todayCompleted ? (
               <div className="p-4 bg-green-50 rounded-xl border border-green-200 mb-4">
                 <p className="text-green-700 font-medium">
-                  You've completed today's challenge!
+                  {t('completedToday')}
                 </p>
                 <p className="text-sm text-green-600 mt-1">
-                  Come back tomorrow for a new challenge.
+                  {t('comeBackTomorrow')}
                 </p>
               </div>
             ) : (
               <Button variant="challenge" size="xl" fullWidth onClick={startChallenge}>
                 <Flame className="w-5 h-5" />
-                Start Challenge
+                {t('startChallenge')}
               </Button>
             )}
 
             {state.todayCompleted && (
               <Button variant="ghost" fullWidth onClick={handleHome} className="mt-3">
-                Back to Home
+                {t('backToHome')}
               </Button>
             )}
           </motion.div>
@@ -305,7 +307,7 @@ export function DailyChallenge() {
 
       <TopBar
         onBack={handleHome}
-        title={`Question ${state.currentIndex + 1}/${state.totalQuestions}`}
+        title={t('questionCount', { current: state.currentIndex + 1, total: state.totalQuestions })}
         rightContent={
           <div className="flex items-center gap-3">
             {/* Streak indicator */}
@@ -350,7 +352,7 @@ export function DailyChallenge() {
           animate={{ opacity: 1 }}
           className="text-center mb-4"
         >
-          <span className="text-sm text-gray-500">Points: </span>
+          <span className="text-sm text-gray-500">{t('points')} </span>
           <span className="font-bold text-challenge">{state.pointsEarned}</span>
         </motion.div>
 
@@ -372,7 +374,7 @@ export function DailyChallenge() {
         {state.status === 'review' && (
           <div className="mt-6">
             <Button variant="challenge" fullWidth onClick={handleNext}>
-              {state.currentIndex >= state.totalQuestions - 1 ? 'See Results' : 'Next Question'}
+              {state.currentIndex >= state.totalQuestions - 1 ? t('seeResults') : t('nextQuestion')}
             </Button>
           </div>
         )}

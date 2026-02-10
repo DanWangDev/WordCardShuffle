@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { X, Calendar, Activity, BookOpen, Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Button, Card } from '../common';
@@ -29,6 +30,7 @@ function isInWeek(dateStr: string, weekStart: Date): boolean {
 }
 
 export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
+    const { t } = useTranslation('parent');
     const [details, setDetails] = useState<AdminUserDetails | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -89,8 +91,8 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-100">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{user.name}'s Progress</h2>
-                        <p className="text-sm text-gray-500">Detailed learning report</p>
+                        <h2 className="text-2xl font-bold text-gray-900">{t('progress', { name: user.name })}</h2>
+                        <p className="text-sm text-gray-500">{t('detailedReport')}</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -112,14 +114,14 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <StatusCard
                                     icon={BookOpen}
-                                    label="Total Quizzes"
+                                    label={t('totalQuizzes')}
                                     value={details.quizHistory.length.toString()}
                                     color="text-blue-600"
                                     bg="bg-blue-50"
                                 />
                                 <StatusCard
                                     icon={Activity}
-                                    label="Avg Accuracy"
+                                    label={t('avgAccuracy')}
                                     value={`${Math.round(
                                         details.quizHistory.reduce((acc: number, curr: any) => acc + (curr.accuracy || 0), 0) /
                                         (details.quizHistory.length || 1)
@@ -129,14 +131,14 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                                 />
                                 <StatusCard
                                     icon={Clock}
-                                    label="Study Sessions"
+                                    label={t('studySessions')}
                                     value={details.studyHistory.length.toString()}
                                     color="text-orange-600"
                                     bg="bg-orange-50"
                                 />
                                 <StatusCard
                                     icon={Calendar}
-                                    label="Words Reviewed"
+                                    label={t('wordsReviewed')}
                                     value={details.studyHistory.reduce((acc: number, curr: any) => acc + curr.words_reviewed, 0).toString()}
                                     color="text-purple-600"
                                     bg="bg-purple-50"
@@ -146,20 +148,20 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                             {/* Weekly Comparison */}
                             {weeklyStats && (
                                 <Card variant="default" padding="md">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Progress</h3>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">{t('weeklyProgress')}</h3>
                                     <div className="grid grid-cols-3 gap-4">
                                         <WeeklyComparisonItem
-                                            label="Quizzes"
+                                            label={t('quizzes')}
                                             thisWeek={weeklyStats.thisWeek.quizzes}
                                             lastWeek={weeklyStats.lastWeek.quizzes}
                                         />
                                         <WeeklyComparisonItem
-                                            label="Study Sessions"
+                                            label={t('studySessions')}
                                             thisWeek={weeklyStats.thisWeek.sessions}
                                             lastWeek={weeklyStats.lastWeek.sessions}
                                         />
                                         <WeeklyComparisonItem
-                                            label="Words Reviewed"
+                                            label={t('wordsReviewed')}
                                             thisWeek={weeklyStats.thisWeek.words}
                                             lastWeek={weeklyStats.lastWeek.words}
                                         />
@@ -170,23 +172,23 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
                             {/* Graphical Analysis */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <Card variant="default" padding="md">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Quiz Accuracy Trend</h3>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">{t('quizAccuracyTrend')}</h3>
                                     <TrendChart
                                         data={details.quizHistory.slice().reverse()}
                                         dataKey="accuracy"
                                         xAxisKey="completed_at"
-                                        name="Accuracy (%)"
+                                        name={t('accuracyPercent')}
                                         color="#8884d8"
                                     />
                                 </Card>
 
                                 <Card variant="default" padding="md">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Daily Study Effort</h3>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">{t('dailyStudyEffort')}</h3>
                                     <TrendChart
                                         data={details.studyHistory.slice().reverse()}
                                         dataKey="words_reviewed"
                                         xAxisKey="start_time"
-                                        name="Words Reviewed"
+                                        name={t('wordsReviewed')}
                                         color="#82ca9d"
                                         aggregateByDay={true}
                                         chartType="bar"
@@ -196,19 +198,19 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
 
                             {/* Weak Words */}
                             <Card variant="default" padding="md">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">Concepts Needing Practice</h3>
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('conceptsNeedingPractice')}</h3>
                                 <WeakWordsTable words={details.weakWords} />
                             </Card>
 
                         </div>
                     ) : (
-                        <div className="text-center py-12 text-gray-500">Failed to load data</div>
+                        <div className="text-center py-12 text-gray-500">{t('failedToLoadData')}</div>
                     )}
                 </div>
 
                 {/* Footer */}
                 <div className="p-4 border-t border-gray-100 bg-white flex justify-end">
-                    <Button variant="ghost" onClick={onClose}>Close Report</Button>
+                    <Button variant="ghost" onClick={onClose}>{t('closeReport')}</Button>
                 </div>
             </motion.div>
         </div>
@@ -229,7 +231,8 @@ function StatusCard({ icon: Icon, label, value, color, bg }: any) {
     );
 }
 
-function WeeklyComparisonItem({ label, thisWeek, lastWeek }: { label: string; thisWeek: number; lastWeek: number }) {
+function WeeklyComparisonItem({ label, thisWeek, lastWeek }: { label: string; thisWeek: number; lastWeek: number; }) {
+    const { t } = useTranslation('parent');
     const diff = thisWeek - lastWeek;
     const percentChange = lastWeek > 0 ? Math.round((diff / lastWeek) * 100) : (thisWeek > 0 ? 100 : 0);
 
@@ -254,10 +257,10 @@ function WeeklyComparisonItem({ label, thisWeek, lastWeek }: { label: string; th
             <div className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full ${bgColor}`}>
                 <TrendIcon className={`w-3 h-3 ${trendColor}`} />
                 <span className={`text-xs font-medium ${trendColor}`}>
-                    {diff === 0 ? 'Same' : `${diff > 0 ? '+' : ''}${percentChange}%`}
+                    {diff === 0 ? t('same') : `${diff > 0 ? '+' : ''}${percentChange}%`}
                 </span>
             </div>
-            <p className="text-xs text-gray-400 mt-1">vs last week ({lastWeek})</p>
+            <p className="text-xs text-gray-400 mt-1">{t('vsLastWeek', { count: lastWeek })}</p>
         </div>
     );
 }

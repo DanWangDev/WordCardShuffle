@@ -26,6 +26,7 @@ export interface UserSettingsRow {
   user_id: number;
   sound_enabled: number; // SQLite stores booleans as integers
   auto_advance: number;
+  language: string;
 }
 
 export interface UserStatsRow {
@@ -108,6 +109,7 @@ export interface User {
 export interface UserSettings {
   soundEnabled: boolean;
   autoAdvance: boolean;
+  language: string;
 }
 
 export interface UserStats {
@@ -184,6 +186,7 @@ export interface AuthResponse {
 export interface UpdateSettingsRequest {
   soundEnabled?: boolean;
   autoAdvance?: boolean;
+  language?: string;
 }
 
 export interface UpdateStatsRequest {

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export function TopBar({
   rightContent,
   variant = 'back',
 }: TopBarProps) {
+  const { t } = useTranslation('common');
   const Icon = variant === 'close' ? X : ArrowLeft;
 
   return (
@@ -28,7 +30,7 @@ export function TopBar({
         <button
           onClick={onBack}
           className="p-2 -ml-1 rounded-xl bg-primary-50 border-2 border-primary-100 hover:bg-primary-100 hover:border-primary-200 transition-all duration-200 flex-shrink-0 cursor-pointer shadow-sm"
-          aria-label={variant === 'close' ? 'Close' : 'Go back'}
+          aria-label={variant === 'close' ? t('close') : t('goBack')}
         >
           <Icon className="w-5 h-5 text-primary-700" />
         </button>

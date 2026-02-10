@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Play, Clock, Hash } from 'lucide-react';
 import { Button, Card } from '../common';
@@ -10,6 +11,7 @@ interface QuizSetupProps {
 }
 
 export function QuizSetup({ onStart, maxQuestions }: QuizSetupProps) {
+  const { t } = useTranslation('quiz');
   const [questionCount, setQuestionCount] = useState(10);
   const [hasTimeLimit, setHasTimeLimit] = useState(true);
   const [timePerQuestion, setTimePerQuestion] = useState(30);
@@ -31,14 +33,14 @@ export function QuizSetup({ onStart, maxQuestions }: QuizSetupProps) {
     >
       <Card variant="elevated" padding="lg">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
-          Quiz Settings
+          {t('settings')}
         </h2>
 
         {/* Number of questions */}
         <div className="mb-6">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
             <Hash className="w-4 h-4" />
-            Number of Questions: <span className="font-bold text-quiz">{questionCount}</span>
+            {t('numQuestions')} <span className="font-bold text-quiz">{questionCount}</span>
           </label>
           <input
             type="range"
@@ -65,7 +67,7 @@ export function QuizSetup({ onStart, maxQuestions }: QuizSetupProps) {
             />
             <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Clock className="w-4 h-4" />
-              Enable time limit
+              {t('enableTimeLimit')}
             </span>
           </label>
         </div>
@@ -74,7 +76,7 @@ export function QuizSetup({ onStart, maxQuestions }: QuizSetupProps) {
         {hasTimeLimit && (
           <div className="mb-6 ml-8">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-              Seconds per Question: <span className="font-bold text-quiz">{timePerQuestion}s</span>
+              {t('secondsPerQuestion')} <span className="font-bold text-quiz">{timePerQuestion}s</span>
             </label>
             <input
               type="range"
@@ -102,7 +104,7 @@ export function QuizSetup({ onStart, maxQuestions }: QuizSetupProps) {
               className="w-5 h-5 rounded border-gray-300 text-quiz focus:ring-quiz"
             />
             <span className="text-sm text-gray-700">
-              Auto-advance after answering (2 second delay)
+              {t('autoAdvance')}
             </span>
           </label>
         </div>
@@ -115,7 +117,7 @@ export function QuizSetup({ onStart, maxQuestions }: QuizSetupProps) {
           onClick={handleStart}
         >
           <Play className="w-5 h-5" />
-          Start Quiz
+          {t('startQuiz')}
         </Button>
       </Card>
     </motion.div>

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Star, Zap } from 'lucide-react';
 
@@ -8,34 +9,35 @@ interface StreakMilestoneProps {
   onDismiss: () => void;
 }
 
-const milestoneConfig: Record<number, { icon: typeof Flame; color: string; bgColor: string; message: string }> = {
+const milestoneConfig: Record<number, { icon: typeof Flame; color: string; bgColor: string; messageKey: string }> = {
   5: {
     icon: Flame,
     color: 'text-orange-500',
     bgColor: 'from-orange-400 to-orange-600',
-    message: '5 in a row!',
+    messageKey: 'streak5',
   },
   10: {
     icon: Zap,
     color: 'text-yellow-500',
     bgColor: 'from-yellow-400 to-amber-500',
-    message: '10 streak!',
+    messageKey: 'streak10',
   },
   15: {
     icon: Star,
     color: 'text-purple-500',
     bgColor: 'from-purple-400 to-purple-600',
-    message: '15 - Amazing!',
+    messageKey: 'streak15',
   },
   20: {
     icon: Star,
     color: 'text-pink-500',
     bgColor: 'from-pink-400 to-rose-500',
-    message: '20 - LEGENDARY!',
+    messageKey: 'streak20',
   },
 };
 
 export function StreakMilestone({ streak, isVisible, onDismiss }: StreakMilestoneProps) {
+  const { t } = useTranslation('challenge');
   const config = milestoneConfig[streak] || milestoneConfig[5];
   const Icon = config.icon;
 
@@ -136,7 +138,7 @@ export function StreakMilestone({ streak, isVisible, onDismiss }: StreakMileston
             className="absolute text-2xl font-bold text-white drop-shadow-lg"
             style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}
           >
-            {config.message}
+            {t(config.messageKey as never)}
           </motion.p>
         </motion.div>
       )}

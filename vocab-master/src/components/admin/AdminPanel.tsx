@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Shield, Plus, Edit, Trash2, LogOut, KeyRound } from 'lucide-react';
 import { Button } from '../common';
 import { ApiService, type AdminUserStats } from '../../services/ApiService';
@@ -8,8 +9,10 @@ import { EditUserModal } from './EditUserModal';
 import { AddUserModal } from './AddUserModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { ResetStudentPasswordModal } from './ResetStudentPasswordModal';
+import { formatDate } from '../../utils/formatters';
 
 export function AdminPanel() {
+    const { t, i18n } = useTranslation('admin');
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [users, setUsers] = useState<AdminUserStats[]>([]);
@@ -56,15 +59,15 @@ export function AdminPanel() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Shield className="w-6 h-6 text-indigo-600" />
-                        <h1 className="text-xl font-bold text-gray-900">System Administration</h1>
+                        <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
                     </div>
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" onClick={handleLogout} className="text-sm">
                             <LogOut className="w-4 h-4" />
-                            Log Out
+                            {t('logOut')}
                         </Button>
                         <Button variant="outline" onClick={handleBack}>
-                            Exit to App
+                            {t('exitToApp')}
                         </Button>
                     </div>
                 </div>
@@ -73,12 +76,12 @@ export function AdminPanel() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-                        <p className="text-gray-500">Manage students, parents, and system administrators.</p>
+                        <h2 className="text-2xl font-bold text-gray-900">{t('userManagement')}</h2>
+                        <p className="text-gray-500">{t('userManagementDesc')}</p>
                     </div>
                     <Button variant="primary" onClick={() => setShowAddUser(true)}>
                         <Plus className="w-4 h-4" />
-                        New User
+                        {t('newUser')}
                     </Button>
                 </div>
 
@@ -91,11 +94,11 @@ export function AdminPanel() {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('table.user')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('table.role')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('table.stats')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('table.lastActive')}</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -124,31 +127,31 @@ export function AdminPanel() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{user.total_words_studied} words</div>
-                                            <div className="text-sm text-gray-500">{user.quizzes_taken} quizzes</div>
+                                            <div className="text-sm text-gray-900">{t('table.wordsStudied', { count: user.total_words_studied })}</div>
+                                            <div className="text-sm text-gray-500">{t('table.quizzesTaken', { count: user.quizzes_taken })}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {user.last_study_date ? new Date(user.last_study_date).toLocaleDateString() : 'Never'}
+                                            {user.last_study_date ? formatDate(user.last_study_date, i18n.language) : t('table.never')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button
                                                 onClick={() => setEditingUser(user)}
                                                 className="text-indigo-600 hover:text-indigo-900 mr-3"
-                                                title="Edit User"
+                                                title={t('editUser')}
                                             >
                                                 <Edit className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => setResetPasswordUser(user)}
                                                 className="text-amber-600 hover:text-amber-900 mr-3"
-                                                title="Reset Password"
+                                                title={t('resetPassword')}
                                             >
                                                 <KeyRound className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => setDeletingUser(user)}
                                                 className="text-red-600 hover:text-red-900 cursor-pointer"
-                                                title="Delete User"
+                                                title={t('deleteUser')}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>

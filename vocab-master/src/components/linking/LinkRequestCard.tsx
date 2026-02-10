@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, UserPlus, Loader2 } from 'lucide-react';
 import type { LinkRequest } from '../../services/ApiService';
@@ -25,6 +26,7 @@ function formatTimeAgo(dateString: string): string {
 }
 
 export function LinkRequestCard({ request, onAccept, onReject }: LinkRequestCardProps) {
+  const { t } = useTranslation('linking');
   const [loading, setLoading] = useState<'accept' | 'reject' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,9 +67,9 @@ export function LinkRequestCard({ request, onAccept, onReject }: LinkRequestCard
         </div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-gray-900">Link Request from {parentName}</h4>
+          <h4 className="font-semibold text-gray-900">{t('linkRequestFrom', { name: parentName })}</h4>
           <p className="text-sm text-gray-600 mt-0.5">
-            {parentName} wants to link their parent account with yours
+            {t('wantsToLink', { name: parentName })}
           </p>
 
           {request.message && (
@@ -95,7 +97,7 @@ export function LinkRequestCard({ request, onAccept, onReject }: LinkRequestCard
               ) : (
                 <Check size={16} />
               )}
-              Accept
+              {t('accept')}
             </button>
             <button
               onClick={handleReject}
@@ -107,7 +109,7 @@ export function LinkRequestCard({ request, onAccept, onReject }: LinkRequestCard
               ) : (
                 <X size={16} />
               )}
-              Decline
+              {t('decline')}
             </button>
           </div>
         </div>
