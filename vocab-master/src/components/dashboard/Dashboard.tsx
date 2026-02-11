@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { LinkRequestCard } from '../linking/LinkRequestCard';
+import { WordlistBadge } from '../wordlists/WordlistBadge';
+import { WordlistSelector } from '../wordlists/WordlistSelector';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -25,6 +27,7 @@ interface ActivityStats {
 
 export function Dashboard() {
   const { t } = useTranslation('dashboard');
+  const { t: tWl } = useTranslation('wordlists');
   const { vocabulary } = useApp();
   const { state: authState } = useAuth();
   const { soundEnabled, toggleSound, playClick } = useAudio();
@@ -33,6 +36,7 @@ export function Dashboard() {
 
   const hasTodayChallenge = StorageService.hasTodayChallenge();
   const userRole = authState.user?.role || 'student';
+  const [showSelector, setShowSelector] = useState(false);
 
   // Fetch activity-based stats for students
   const [activityStats, setActivityStats] = useState<ActivityStats | null>(null);
@@ -125,23 +129,44 @@ export function Dashboard() {
             <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary-100 rounded-full opacity-50 blur-xl"></div>
           </div>
 
+          {/* Active Wordlist Badge */}
+          <WordlistBadge onClick={() => setShowSelector(true)} />
+
           {/* Role-based Content */}
           {userRole === 'admin' ? (
-            <ModeCard
-              title={t('adminPanel')}
-              description={t('adminPanelDesc')}
-              icon={Brain}
-              color="quiz"
-              onClick={() => navigate('/admin')}
-            />
+            <>
+              <ModeCard
+                title={t('adminPanel')}
+                description={t('adminPanelDesc')}
+                icon={Brain}
+                color="quiz"
+                onClick={() => navigate('/admin')}
+              />
+              <ModeCard
+                title={tWl('manageWordlists')}
+                description={tWl('manageTitle')}
+                icon={List}
+                color="study"
+                onClick={() => navigate('/wordlists/manage')}
+              />
+            </>
           ) : userRole === 'parent' ? (
-            <ModeCard
-              title={t('parentDashboard')}
-              description={t('parentDashboardDesc')}
-              icon={Trophy}
-              color="challenge"
-              onClick={() => navigate('/parent')}
-            />
+            <>
+              <ModeCard
+                title={t('parentDashboard')}
+                description={t('parentDashboardDesc')}
+                icon={Trophy}
+                color="challenge"
+                onClick={() => navigate('/parent')}
+              />
+              <ModeCard
+                title={tWl('manageWordlists')}
+                description={tWl('manageTitle')}
+                icon={List}
+                color="study"
+                onClick={() => navigate('/wordlists/manage')}
+              />
+            </>
           ) : (
             // Student Content
             <>
@@ -249,6 +274,9 @@ export function Dashboard() {
           </motion.div>
         )}
       </main>
+
+      {/* Wordlist Selector Modal */}
+      <WordlistSelector isOpen={showSelector} onClose={() => setShowSelector(false)} />
     </div>
   );
 }

@@ -17,6 +17,7 @@ const QuizMode = lazy(() => import('../components/quiz/QuizMode').then(m => ({ d
 const DailyChallenge = lazy(() => import('../components/challenge/DailyChallenge').then(m => ({ default: m.DailyChallenge })));
 const ParentDashboard = lazy(() => import('../components/parent/ParentDashboard').then(m => ({ default: m.ParentDashboard })));
 const AdminPanel = lazy(() => import('../components/admin/AdminPanel').then(m => ({ default: m.AdminPanel })));
+const WordlistManager = lazy(() => import('../components/wordlists/WordlistManager').then(m => ({ default: m.WordlistManager })));
 
 // Loading fallback component
 function PageLoader() {
@@ -141,6 +142,18 @@ export const router = createBrowserRouter([
               {
                 index: true,
                 element: withSuspense(AdminPanel),
+              },
+            ],
+          },
+          {
+            path: 'wordlists',
+            children: [
+              {
+                path: 'manage',
+                element: <RoleRoute allowedRoles={['admin', 'parent']} />,
+                children: [
+                  { index: true, element: withSuspense(WordlistManager) },
+                ],
               },
             ],
           },

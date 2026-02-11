@@ -6,6 +6,7 @@ import { repairFks } from './005_repair_fks';
 import { addEmailAndPasswordReset } from './006_add_email_and_password_reset';
 import { addNotificationsAndLinkRequests } from './007_add_notifications_and_link_requests';
 import { addLanguageSetting } from './008_add_language_setting';
+import { addWordlists } from './009_add_wordlists';
 
 export const migrations = [
     initialSchema,
@@ -16,4 +17,5 @@ export const migrations = [
     addEmailAndPasswordReset,
     addNotificationsAndLinkRequests,
     addLanguageSetting,
+    addWordlists,
 ];

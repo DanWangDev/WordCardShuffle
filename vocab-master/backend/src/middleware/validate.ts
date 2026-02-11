@@ -148,3 +148,41 @@ export const linkRequestActionSchema = z.object({
 export const studentSearchSchema = z.object({
   q: z.string().min(2, 'Search query must be at least 2 characters')
 });
+
+// Wordlist validation schemas
+export const createWordlistSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(1000).optional().default(''),
+  visibility: z.enum(['private', 'shared']).optional().default('private'),
+  words: z.array(z.object({
+    targetWord: z.string().min(1).max(100),
+    definitions: z.array(z.string().min(1)).min(1),
+    synonyms: z.array(z.string()).optional().default([]),
+    exampleSentences: z.array(z.string()).optional().default([]),
+  })).min(1).max(10000)
+});
+
+export const updateWordlistSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).optional(),
+});
+
+export const setActiveWordlistSchema = z.object({
+  wordlistId: z.number().int().positive(),
+});
+
+export const addWordsSchema = z.object({
+  words: z.array(z.object({
+    targetWord: z.string().min(1).max(100),
+    definitions: z.array(z.string().min(1)).min(1),
+    synonyms: z.array(z.string()).optional().default([]),
+    exampleSentences: z.array(z.string()).optional().default([]),
+  })).min(1).max(10000)
+});
+
+export const updateWordSchema = z.object({
+  targetWord: z.string().min(1).max(100).optional(),
+  definitions: z.array(z.string().min(1)).min(1).optional(),
+  synonyms: z.array(z.string()).optional(),
+  exampleSentences: z.array(z.string()).optional(),
+});

@@ -1,5 +1,7 @@
 // API Service for communicating with the backend
 
+import type { Wordlist, WordlistWord, CreateWordlistRequest, ImportResult } from '../types/wordlist';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9876/api';
 
 // Token storage keys
@@ -621,6 +623,94 @@ class ApiServiceClass {
   async cancelLinkRequest(id: number): Promise<{ success: boolean; message: string }> {
     return this.fetchWithAuth<{ success: boolean; message: string }>(`/link-requests/${id}`, {
       method: 'DELETE'
+    });
+  }
+
+  // Wordlist methods
+  async getWordlists(): Promise<{ wordlists: Wordlist[] }> {
+    return this.fetchWithAuth('/wordlists');
+  }
+
+  async getWordlist(id: number): Promise<Wordlist> {
+    return this.fetchWithAuth(`/wordlists/${id}`);
+  }
+
+  async getWordlistWords(id: number): Promise<{ words: WordlistWord[] }> {
+    return this.fetchWithAuth(`/wordlists/${id}/words`);
+  }
+
+  async getActiveWordlist(): Promise<{ wordlist: Wordlist; words: WordlistWord[] }> {
+    return this.fetchWithAuth('/wordlists/active');
+  }
+
+  async setActiveWordlist(wordlistId: number): Promise<{ success: boolean }> {
+    return this.fetchWithAuth('/wordlists/active', {
+      method: 'PUT',
+      body: JSON.stringify({ wordlistId }),
+    });
+  }
+
+  async createWordlist(data: CreateWordlistRequest): Promise<{ wordlist: Wordlist }> {
+    return this.fetchWithAuth('/wordlists', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async importWordlist(file: File, name: string, description?: string): Promise<ImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', name);
+    if (description) formData.append('description', description);
+
+    const headers: Record<string, string> = {};
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/wordlists/import`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: 'Import failed' }));
+      throw new Error(err.message);
+    }
+    return response.json();
+  }
+
+  async updateWordlist(id: number, data: { name?: string; description?: string }): Promise<{ wordlist: Wordlist }> {
+    return this.fetchWithAuth(`/wordlists/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWordlist(id: number): Promise<{ success: boolean }> {
+    return this.fetchWithAuth(`/wordlists/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async addWordsToWordlist(wordlistId: number, words: CreateWordlistRequest['words']): Promise<{ success: boolean; wordCount: number }> {
+    return this.fetchWithAuth(`/wordlists/${wordlistId}/words`, {
+      method: 'POST',
+      body: JSON.stringify({ words }),
+    });
+  }
+
+  async updateWordInWordlist(wordlistId: number, wordId: number, data: Partial<Omit<WordlistWord, 'id' | 'wordlistId' | 'sortOrder'>>): Promise<{ success: boolean }> {
+    return this.fetchWithAuth(`/wordlists/${wordlistId}/words/${wordId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWordFromWordlist(wordlistId: number, wordId: number): Promise<{ success: boolean }> {
+    return this.fetchWithAuth(`/wordlists/${wordlistId}/words/${wordId}`, {
+      method: 'DELETE',
     });
   }
 

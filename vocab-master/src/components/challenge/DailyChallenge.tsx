@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Flame, Trophy } from 'lucide-react';
+import { AlertTriangle, Flame, Trophy } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
 import { Timer, ProgressBar, Button } from '../common';
 import { UserMenu } from '../common/UserMenu';
@@ -22,10 +22,32 @@ const CHALLENGE_QUESTIONS = 20;
 const TIME_PER_QUESTION = 25;
 
 export function DailyChallenge() {
-  const { t } = useTranslation('challenge');
+  const { t } = useTranslation(['challenge', 'wordlists']);
   const { vocabulary, loadUserData } = useApp();
   const { playSuccess, playError, playClick, playWarning, playComplete } = useAudio();
   const navigate = useNavigate();
+
+  // Guard: need at least 4 words for challenge
+  if (vocabulary.length < 4) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-challenge-light/30 to-gray-50">
+        <TopBar onBack={() => navigate('/')} title={t('challenge:title')} />
+        <main className="max-w-md mx-auto px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-sm p-8 text-center"
+          >
+            <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+            <p className="text-gray-700 font-medium mb-6">{t('wordlists:minWordsChallenge')}</p>
+            <Button variant="challenge" onClick={() => navigate('/')}>
+              {t('challenge:backToHome', 'Back to Home')}
+            </Button>
+          </motion.div>
+        </main>
+      </div>
+    );
+  }
 
   const [state, setState] = useState<DailyChallengeState>({
     questions: [],

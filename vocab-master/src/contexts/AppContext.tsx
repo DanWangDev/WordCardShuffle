@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer, useEffect, useCallback, useState
 import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import i18n from '../i18n';
-import type { AppState, AppMode, UserSettings, UserStats, VocabularyWord } from '../types';
+import type { AppState, AppMode, UserSettings, UserStats, VocabularyWord, Wordlist, WordlistWord } from '../types';
 import { StorageService } from '../services/StorageService';
 import ApiService from '../services/ApiService';
 
@@ -11,11 +11,14 @@ type AppAction =
   | { type: 'UPDATE_SETTINGS'; payload: Partial<UserSettings> }
   | { type: 'UPDATE_STATS'; payload: Partial<UserStats> }
   | { type: 'LOAD_USER_DATA'; payload: { settings: UserSettings; stats: UserStats } }
-  | { type: 'SET_SYNCING'; payload: boolean };
+  | { type: 'SET_SYNCING'; payload: boolean }
+  | { type: 'SET_ACTIVE_WORDLIST'; payload: Wordlist | null }
+  | { type: 'SET_VOCABULARY_LOADING'; payload: boolean };
 
 // Extended state for sync status
 interface ExtendedAppState extends Omit<AppState, 'currentMode'> {
   isSyncing: boolean;
+  activeWordlist: Wordlist | null;
 }
 
 // Initial state
@@ -23,6 +26,7 @@ const initialState: ExtendedAppState = {
   settings: StorageService.getSettings(),
   stats: StorageService.getStats(),
   isSyncing: false,
+  activeWordlist: null,
 };
 
 // Reducer
@@ -51,6 +55,12 @@ function appReducer(state: ExtendedAppState, action: AppAction): ExtendedAppStat
 
     case 'SET_SYNCING':
       return { ...state, isSyncing: action.payload };
+
+    case 'SET_ACTIVE_WORDLIST':
+      return { ...state, activeWordlist: action.payload };
+
+    case 'SET_VOCABULARY_LOADING':
+      return state;
 
     default:
       return state;
@@ -88,14 +98,26 @@ interface AppContextType {
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   updateStats: (stats: Partial<UserStats>) => Promise<void>;
   loadUserData: () => Promise<void>;
+  switchWordlist: (wordlistId: number) => Promise<void>;
+  activeWordlist: Wordlist | null;
   isAuthenticated: boolean;
 }
 
 // Create context
 const AppContext = createContext<AppContextType | null>(null);
 
-// Cache for vocabulary data
-let vocabularyCache: VocabularyWord[] | null = null;
+// Helper to map API WordlistWord to VocabularyWord
+function mapToVocabularyWord(w: WordlistWord): VocabularyWord {
+  return {
+    targetWord: w.targetWord,
+    definition: w.definitions,
+    synonyms: w.synonyms,
+    exampleSentence: w.exampleSentences,
+  };
+}
+
+// Cache for vocabulary data keyed by wordlist ID (0 = fallback/unauthenticated)
+const vocabularyCache = new Map<number, VocabularyWord[]>();
 
 // Provider component
 interface AppProviderProps {
@@ -105,34 +127,63 @@ interface AppProviderProps {
 
 export function AppProvider({ children, isAuthenticated = false }: AppProviderProps) {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  const [vocabulary, setVocabulary] = useState<VocabularyWord[]>(vocabularyCache || []);
-  const [vocabularyLoading, setVocabularyLoading] = useState(!vocabularyCache);
+  const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
+  const [vocabularyLoading, setVocabularyLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   // Derive currentMode from location
   const currentMode = deriveCurrentMode(location.pathname);
 
-  // Load vocabulary data from public folder
+  // Load vocabulary data - from API if authenticated, otherwise from public folder
   useEffect(() => {
-    if (vocabularyCache) {
-      setVocabulary(vocabularyCache);
-      setVocabularyLoading(false);
-      return;
-    }
+    let cancelled = false;
 
-    fetch('/words.json')
-      .then(res => res.json())
-      .then((data: VocabularyWord[]) => {
-        vocabularyCache = data;
+    async function loadVocabulary() {
+      // If authenticated, try to load from API
+      if (isAuthenticated && ApiService.hasTokens()) {
+        try {
+          const { wordlist, words } = await ApiService.getActiveWordlist();
+          if (cancelled) return;
+          const mapped = words.map(mapToVocabularyWord);
+          vocabularyCache.set(wordlist.id, mapped);
+          setVocabulary(mapped);
+          setVocabularyLoading(false);
+          dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: wordlist });
+          return;
+        } catch (error) {
+          console.error('Failed to load active wordlist from API, falling back to words.json:', error);
+        }
+      }
+
+      // Fallback: load from public folder
+      const cached = vocabularyCache.get(0);
+      if (cached) {
+        if (!cancelled) {
+          setVocabulary(cached);
+          setVocabularyLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const res = await fetch('/words.json');
+        const data: VocabularyWord[] = await res.json();
+        if (cancelled) return;
+        vocabularyCache.set(0, data);
         setVocabulary(data);
         setVocabularyLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Failed to load vocabulary:', err);
-        setVocabularyLoading(false);
-      });
-  }, []);
+        if (!cancelled) {
+          setVocabularyLoading(false);
+        }
+      }
+    }
+
+    loadVocabulary();
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
 
   // Load user data from API when authenticated
   const loadUserData = useCallback(async () => {
@@ -212,6 +263,35 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
     }
   }, [isAuthenticated]);
 
+  // Switch active wordlist
+  const switchWordlist = useCallback(async (wordlistId: number) => {
+    if (!isAuthenticated || !ApiService.hasTokens()) return;
+
+    setVocabularyLoading(true);
+    try {
+      await ApiService.setActiveWordlist(wordlistId);
+
+      // Check cache first
+      const cached = vocabularyCache.get(wordlistId);
+      if (cached) {
+        setVocabulary(cached);
+      } else {
+        const { words } = await ApiService.getWordlistWords(wordlistId);
+        const mapped = words.map(mapToVocabularyWord);
+        vocabularyCache.set(wordlistId, mapped);
+        setVocabulary(mapped);
+      }
+
+      const wordlist = await ApiService.getWordlist(wordlistId);
+      dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: wordlist });
+    } catch (error) {
+      console.error('Failed to switch wordlist:', error);
+      throw error;
+    } finally {
+      setVocabularyLoading(false);
+    }
+  }, [isAuthenticated]);
+
   // Update stats with API sync
   const updateStats = useCallback(async (stats: Partial<UserStats>) => {
     // Optimistically update local state
@@ -243,6 +323,8 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
     updateSettings,
     updateStats,
     loadUserData,
+    switchWordlist,
+    activeWordlist: state.activeWordlist,
     isAuthenticated,
   };
 

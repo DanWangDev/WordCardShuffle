@@ -12,6 +12,7 @@ import adminEn from './locales/en/admin.json'
 import parentEn from './locales/en/parent.json'
 import notificationsEn from './locales/en/notifications.json'
 import linkingEn from './locales/en/linking.json'
+import wordlistsEn from './locales/en/wordlists.json'
 
 import commonZh from './locales/zh-CN/common.json'
 import authZh from './locales/zh-CN/auth.json'
@@ -23,6 +24,7 @@ import adminZh from './locales/zh-CN/admin.json'
 import parentZh from './locales/zh-CN/parent.json'
 import notificationsZh from './locales/zh-CN/notifications.json'
 import linkingZh from './locales/zh-CN/linking.json'
+import wordlistsZh from './locales/zh-CN/wordlists.json'
 
 i18n
   .use(LanguageDetector)
@@ -40,6 +42,7 @@ i18n
         parent: parentEn,
         notifications: notificationsEn,
         linking: linkingEn,
+        wordlists: wordlistsEn,
       },
       'zh-CN': {
         common: commonZh,
@@ -52,6 +55,7 @@ i18n
         parent: parentZh,
         notifications: notificationsZh,
         linking: linkingZh,
+        wordlists: wordlistsZh,
       },
     },
     fallbackLng: 'en',
@@ -67,6 +71,7 @@ i18n
       'parent',
       'notifications',
       'linking',
+      'wordlists',
     ],
     interpolation: {
       escapeValue: false,

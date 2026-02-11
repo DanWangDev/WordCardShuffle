@@ -288,3 +288,31 @@ export interface CreateLinkRequestRequest {
 export interface LinkRequestActionRequest {
   action: 'accept' | 'reject';
 }
+
+// Wordlist types
+export interface WordlistRow {
+  id: number;
+  name: string;
+  description: string;
+  is_system: number;
+  created_by: number | null;
+  visibility: 'system' | 'private' | 'shared';
+  word_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WordlistWordRow {
+  id: number;
+  wordlist_id: number;
+  target_word: string;
+  definitions: string;
+  synonyms: string;
+  example_sentences: string;
+  sort_order: number;
+}
+
+export interface UserActiveWordlistRow {
+  user_id: number;
+  wordlist_id: number;
+}

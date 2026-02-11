@@ -8,3 +8,4 @@ export { default as studyStatsRoutes } from './studyStats';
 export { default as adminRoutes } from './admin';
 export { default as notificationsRoutes } from './notifications';
 export { default as linkRequestsRoutes } from './linkRequests';
+export { default as wordlistsRoutes } from './wordlists';

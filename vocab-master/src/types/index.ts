@@ -1,6 +1,7 @@
 export * from './vocabulary';
 export * from './quiz';
 export * from './storage';
+export * from './wordlist';
 
 export type AppMode = 'dashboard' | 'study' | 'quiz' | 'challenge' | 'parent' | 'admin' | 'login';
 

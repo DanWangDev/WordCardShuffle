@@ -24,7 +24,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy built files
+# Copy built files and seed data
 COPY --from=builder /app/dist ./dist
 
 # Create data directory for SQLite

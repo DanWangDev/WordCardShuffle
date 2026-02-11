@@ -10,7 +10,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase } from './config/database.js';
-import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes } from './routes/index.js';
+import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 
 const app = express();
@@ -84,6 +84,16 @@ const linkRequestLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Wordlist import rate limiter
+const importLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // 10 imports per hour
+  message: { error: 'Too Many Requests', message: 'Too many import requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.use('/api/wordlists/import', importLimiter);
 app.use('/api/auth', authLimiter);
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth/reset-password', passwordResetLimiter);
@@ -102,6 +112,7 @@ app.use('/api/study-stats', studyStatsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/link-requests', linkRequestsRoutes);
+app.use('/api/wordlists', wordlistsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

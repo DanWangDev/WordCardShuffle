@@ -9,13 +9,14 @@ export function generateQuizQuestion(
   allWords: VocabularyWord[],
   format: QuestionFormat = 'mcq'
 ): QuizQuestion {
-  // Determine prompt type - prefer synonym if available
-  const useSynonym = word.synonyms.length > 0 && Math.random() > 0.5;
+  // Guard: only use synonyms if the array is non-empty
+  const hasSynonyms = Array.isArray(word.synonyms) && word.synonyms.length > 0;
+  const useSynonym = hasSynonyms && Math.random() > 0.5;
 
   let prompt: string;
   let promptType: 'definition' | 'synonym';
 
-  if (useSynonym && word.synonyms.length > 0) {
+  if (useSynonym && hasSynonyms) {
     prompt = getRandomElement(word.synonyms);
     promptType = 'synonym';
   } else if (word.definition.length > 0) {
@@ -56,6 +57,9 @@ export function generateQuizQuestions(
   count: number,
   format: QuestionFormat = 'mcq'
 ): QuizQuestion[] {
+  if (words.length < 4) {
+    throw new Error('Not enough words for quiz');
+  }
   const selectedWords = shuffleArray(words).slice(0, count);
   return selectedWords.map(word => generateQuizQuestion(word, words, format));
 }
@@ -68,11 +72,11 @@ function generateMultiSelectQuestion(
   word: VocabularyWord,
   allWords: VocabularyWord[]
 ): QuizQuestion {
-  // Decide whether to ask for synonyms or definitions
-  const hasSynonyms = word.synonyms.length > 0;
-  const hasDefinitions = word.definition.length > 0;
+  // Guard: safely check arrays
+  const hasSynonyms = Array.isArray(word.synonyms) && word.synonyms.length > 0;
+  const hasDefinitions = Array.isArray(word.definition) && word.definition.length > 0;
 
-  // Prefer synonyms if available, otherwise use definitions
+  // Prefer synonyms if available, fall through to definitions if empty
   const useSynonym = hasSynonyms && (Math.random() > 0.3 || !hasDefinitions);
 
   let correctAnswers: string[];
