@@ -9,9 +9,10 @@ import { useApp } from '../../src/contexts/AppContext';
 import { useTimer } from '../../src/hooks/useTimer';
 import { useAudio } from '../../src/hooks/useAudio';
 import { MultiSelectQuestion, ChallengeResults, StreakMilestone } from '../../src/components/challenge';
-import { Timer, Button } from '../../src/components/common';
+import { Timer, Button, OfflineIndicator } from '../../src/components/common';
 import { ProgressBar } from '../../src/components/study/ProgressBar';
 import { ApiService } from '../../src/services/ApiService';
+import { OfflineSyncService } from '../../src/services/OfflineSyncService';
 import { StorageService } from '../../src/services/StorageService';
 import { colors } from '../../src/theme/colors';
 import {
@@ -175,8 +176,8 @@ export default function ChallengeScreen() {
 
         const totalTimeSpent = prev.answers.reduce((acc, curr) => acc + curr.timeSpent, 0);
 
-        ApiService.saveQuizResult({
-          quizType: 'challenge',
+        const resultData = {
+          quizType: 'challenge' as const,
           totalQuestions: prev.totalQuestions,
           correctAnswers: prev.score,
           score: prev.pointsEarned,
@@ -196,8 +197,15 @@ export default function ChallengeScreen() {
               timeSpent: a.timeSpent,
             };
           }),
-        }).catch(() => {
-          // Silently fail - Phase 3 adds offline queue
+        };
+
+        ApiService.saveQuizResult(resultData).catch(() => {
+          OfflineSyncService.queueRequest(
+            'save_quiz_result',
+            '/quiz-results',
+            'POST',
+            resultData
+          );
         });
 
         return { ...prev, status: 'complete', todayCompleted: true };
@@ -317,6 +325,7 @@ export default function ChallengeScreen() {
   // Active challenge
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <OfflineIndicator />
       {/* Streak milestone */}
       <StreakMilestone
         streak={milestoneStreak ?? 0}

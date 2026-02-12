@@ -4,6 +4,9 @@ import i18n from '../i18n';
 import type { UserSettings, UserStats, VocabularyWord, Wordlist, WordlistWord } from '@vocab-master/shared';
 import { StorageService } from '../services/StorageService';
 import { ApiService } from '../services/ApiService';
+import { DatabaseService } from '../services/DatabaseService';
+import { OfflineSyncService } from '../services/OfflineSyncService';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 type AppAction =
   | { type: 'UPDATE_SETTINGS'; payload: Partial<UserSettings> }
@@ -76,6 +79,8 @@ interface AppContextType {
   state: AppState;
   vocabulary: VocabularyWord[];
   vocabularyLoading: boolean;
+  isOnline: boolean;
+  pendingSyncCount: number;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   updateStats: (stats: Partial<UserStats>) => Promise<void>;
   loadUserData: () => Promise<void>;
@@ -95,6 +100,35 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
   const [state, dispatch] = useReducer(appReducer, initialState);
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
   const [vocabularyLoading, setVocabularyLoading] = useState(true);
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const { isOnline } = useNetworkStatus();
+
+  // Initialize database on mount
+  useEffect(() => {
+    DatabaseService.init().catch(() => {
+      // Database init failed - app will work without offline cache
+    });
+  }, []);
+
+  // Subscribe to sync queue count changes
+  useEffect(() => {
+    const unsubscribe = OfflineSyncService.subscribe((count) => {
+      setPendingSyncCount(count);
+    });
+
+    OfflineSyncService.getPendingCount().then(setPendingSyncCount);
+
+    return unsubscribe;
+  }, []);
+
+  // Process sync queue when coming back online
+  useEffect(() => {
+    if (isOnline && isAuthenticated) {
+      OfflineSyncService.processQueue().catch(() => {
+        // Sync failed - will retry next time
+      });
+    }
+  }, [isOnline, isAuthenticated]);
 
   // Load local settings on mount
   useEffect(() => {
@@ -108,28 +142,52 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
     loadLocal();
   }, []);
 
-  // Load vocabulary from API when authenticated
+  // Load vocabulary from API when authenticated, fall back to SQLite cache when offline
   useEffect(() => {
     let cancelled = false;
 
     async function loadVocabulary() {
-      if (isAuthenticated && ApiService.hasTokens()) {
-        try {
-          const { wordlist, words } = await ApiService.getActiveWordlist();
-          if (cancelled) return;
-          const mapped = words.map(mapToVocabularyWord);
-          vocabularyCache.set(wordlist.id, mapped);
-          setVocabulary(mapped);
+      if (!isAuthenticated || !ApiService.hasTokens()) {
+        if (!cancelled) {
+          setVocabulary([]);
           setVocabularyLoading(false);
-          dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: wordlist });
-          return;
-        } catch {
-          // Fall through
         }
+        return;
+      }
+
+      try {
+        const { wordlist, words } = await ApiService.getActiveWordlist();
+        if (cancelled) return;
+
+        const mapped = words.map(mapToVocabularyWord);
+        vocabularyCache.set(wordlist.id, mapped);
+        setVocabulary(mapped);
+        setVocabularyLoading(false);
+        dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: wordlist });
+
+        // Cache to SQLite for offline use
+        DatabaseService.cacheWordlist(wordlist, words).catch(() => {
+          // Cache write failed - not critical
+        });
+        return;
+      } catch {
+        // API failed - try offline cache
+      }
+
+      // Fall back to SQLite cache
+      try {
+        const cached = await DatabaseService.getAnyCachedWordlist();
+        if (cached && !cancelled) {
+          const mapped = cached.words.map(mapToVocabularyWord);
+          vocabularyCache.set(cached.wordlist.id, mapped);
+          setVocabulary(mapped);
+          dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: cached.wordlist });
+        }
+      } catch {
+        // Cache read also failed
       }
 
       if (!cancelled) {
-        setVocabulary([]);
         setVocabularyLoading(false);
       }
     }
@@ -161,6 +219,9 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
         StorageService.saveSettings(settings),
         StorageService.saveStats(stats),
       ]);
+
+      // Process any pending sync items
+      await OfflineSyncService.processQueue();
     } catch {
       // Fall back to local data
     } finally {
@@ -189,7 +250,13 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
         try {
           await ApiService.updateSettings(settings);
         } catch {
-          // Local state already updated
+          // Queue for later sync
+          await OfflineSyncService.queueRequest(
+            'update_settings',
+            '/settings',
+            'PUT',
+            settings
+          );
         }
       }
     },
@@ -212,12 +279,23 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
           const mapped = words.map(mapToVocabularyWord);
           vocabularyCache.set(wordlistId, mapped);
           setVocabulary(mapped);
+
+          // Also cache in SQLite
+          const wordlist = await ApiService.getWordlist(wordlistId);
+          DatabaseService.cacheWordlist(wordlist, words).catch(() => {});
         }
 
         const wordlist = await ApiService.getWordlist(wordlistId);
         dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: wordlist });
-      } catch (error) {
-        throw error;
+      } catch {
+        // Try SQLite cache
+        const sqlCached = await DatabaseService.getCachedWordlist(wordlistId);
+        if (sqlCached) {
+          const mapped = sqlCached.words.map(mapToVocabularyWord);
+          vocabularyCache.set(wordlistId, mapped);
+          setVocabulary(mapped);
+          dispatch({ type: 'SET_ACTIVE_WORDLIST', payload: sqlCached.wordlist });
+        }
       } finally {
         setVocabularyLoading(false);
       }
@@ -235,7 +313,12 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
         try {
           await ApiService.updateStats(stats);
         } catch {
-          // Local state already updated
+          await OfflineSyncService.queueRequest(
+            'update_stats',
+            '/stats',
+            'PATCH',
+            stats
+          );
         }
       }
     },
@@ -246,6 +329,8 @@ export function AppProvider({ children, isAuthenticated = false }: AppProviderPr
     state,
     vocabulary,
     vocabularyLoading,
+    isOnline,
+    pendingSyncCount,
     updateSettings,
     updateStats,
     loadUserData,

@@ -10,9 +10,10 @@ import { useQuiz } from '../../src/hooks/useQuiz';
 import { useTimer } from '../../src/hooks/useTimer';
 import { useAudio } from '../../src/hooks/useAudio';
 import { QuizSetup, QuestionCard, QuizResults } from '../../src/components/quiz';
-import { Timer, Button } from '../../src/components/common';
+import { Timer, Button, OfflineIndicator } from '../../src/components/common';
 import { ProgressBar } from '../../src/components/study/ProgressBar';
 import { ApiService } from '../../src/services/ApiService';
+import { OfflineSyncService } from '../../src/services/OfflineSyncService';
 import { colors } from '../../src/theme/colors';
 import type { QuizConfig } from '@vocab-master/shared';
 
@@ -71,8 +72,8 @@ export default function QuizScreen() {
     if (state.status === 'complete') {
       const totalTimeSpent = state.answers.reduce((acc, curr) => acc + curr.timeSpent, 0);
 
-      ApiService.saveQuizResult({
-        quizType: 'quiz',
+      const resultData = {
+        quizType: 'quiz' as const,
         totalQuestions: state.totalQuestions,
         correctAnswers: state.score,
         score: state.score,
@@ -92,8 +93,15 @@ export default function QuizScreen() {
             timeSpent: a.timeSpent,
           };
         }),
-      }).catch(() => {
-        // Silently fail - results will be lost offline (Phase 3 adds queue)
+      };
+
+      ApiService.saveQuizResult(resultData).catch(() => {
+        OfflineSyncService.queueRequest(
+          'save_quiz_result',
+          '/quiz-results',
+          'POST',
+          resultData
+        );
       });
     }
   }, [state.status]);
@@ -181,6 +189,7 @@ export default function QuizScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <OfflineIndicator />
       {/* Setup screen */}
       {state.status === 'setup' && (
         <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
