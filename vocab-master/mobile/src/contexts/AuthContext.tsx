@@ -157,6 +157,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    // Unregister push token before clearing auth
+    try {
+      await ApiService.unregisterPushToken();
+    } catch {
+      // Best-effort unregister
+    }
     await ApiService.logout();
     dispatch({ type: 'LOGOUT' });
   }, []);

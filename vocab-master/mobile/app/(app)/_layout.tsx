@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { Redirect, Tabs, useRouter } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
 import {
   Home,
@@ -11,10 +10,12 @@ import {
   List,
 } from 'lucide-react-native';
 import { useAuth, AppProvider } from '../../src/contexts';
+import { useNotifications } from '../../src/hooks/useNotifications';
 import { colors } from '../../src/theme';
 
 export default function AppLayout() {
   const { state } = useAuth();
+  useNotifications(state.isAuthenticated);
 
   if (state.isLoading) {
     return (

@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate, createLinkRequestSchema, linkRequestActionSchema } from '../middleware/validate.js';
 import { linkRequestRepository, userRepository } from '../repositories/index.js';
+import { pushNotificationService } from '../services/index.js';
 import type { AuthRequest, LinkRequest, CreateLinkRequestRequest, LinkRequestActionRequest } from '../types/index.js';
 
 const router = Router();
@@ -111,6 +112,16 @@ router.post('/', requireRole(['parent']), validate(createLinkRequestSchema), (re
 
     const request = linkRequestRepository.create(parentId, studentId, message);
 
+    // Send push notification to student
+    const parent = userRepository.findById(parentId);
+    const parentName = parent?.display_name || parent?.username || 'A parent';
+    pushNotificationService.sendToUser(
+      studentId,
+      'New Link Request',
+      `${parentName} wants to link their account with yours`,
+      { type: 'link_request', linkRequestId: request.id }
+    ).catch(err => console.error('Push notification failed:', err));
+
     res.status(201).json({
       success: true,
       request: toLinkRequest(request as unknown as Parameters<typeof toLinkRequest>[0])
@@ -183,6 +194,22 @@ router.patch('/:id', requireRole(['student']), validate(linkRequestActionSchema)
         message: 'Link request not found or cannot be modified'
       });
       return;
+    }
+
+    // Send push notification to parent
+    const linkRequest = linkRequestRepository.findByIdWithUsers(requestId);
+    if (linkRequest) {
+      const studentName = linkRequest.student_display_name || linkRequest.student_username;
+      const title = action === 'accept' ? 'Link Request Accepted' : 'Link Request Declined';
+      const body = action === 'accept'
+        ? `${studentName} has accepted your link request`
+        : `${studentName} has declined your link request`;
+      pushNotificationService.sendToUser(
+        linkRequest.parent_id,
+        title,
+        body,
+        { type: action === 'accept' ? 'link_accepted' : 'link_rejected' }
+      ).catch(err => console.error('Push notification failed:', err));
     }
 
     res.json({
