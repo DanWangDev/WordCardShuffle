@@ -10,7 +10,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase } from './config/database.js';
-import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes } from './routes/index.js';
+import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 
 const app = express();
@@ -113,6 +113,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/link-requests', linkRequestsRoutes);
 app.use('/api/wordlists', wordlistsRoutes);
+app.use('/api/push-tokens', pushTokensRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

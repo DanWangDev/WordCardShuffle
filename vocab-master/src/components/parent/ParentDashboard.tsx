@@ -2,28 +2,32 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, LayoutDashboard, UserPlus, X, Clock, Loader2 } from 'lucide-react';
+import { LogOut, LayoutDashboard, UserPlus, Plus, X, Clock, Loader2, Pencil } from 'lucide-react';
 import { Button } from '../common';
 import { UserList } from './UserList';
 import { UserDetailModal } from './UserDetailModal';
 import { ResetStudentPasswordModal } from '../admin/ResetStudentPasswordModal';
 import { StudentSearchModal } from '../linking/StudentSearchModal';
+import { CreateStudentModal } from './CreateStudentModal';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { CompleteProfileModal } from '../auth/CompleteProfileModal';
 import { ApiService, type AdminUserStats } from '../../services/ApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 
 export function ParentDashboard() {
     const { t } = useTranslation('parent');
-    const { logout } = useAuth();
+    const { state, logout, updateProfile, clearNewGoogleUser } = useAuth();
     const navigate = useNavigate();
     const { linkRequests, cancelLinkRequest, refreshAll } = useNotifications();
     const [users, setUsers] = useState<AdminUserStats[]>([]);
     const [selectedUser, setSelectedUser] = useState<AdminUserStats | null>(null);
     const [resetPasswordUser, setResetPasswordUser] = useState<AdminUserStats | null>(null);
     const [showLinkModal, setShowLinkModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [cancellingId, setCancellingId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
+    const [showEditProfile, setShowEditProfile] = useState(false);
 
     // Load users on mount
     useEffect(() => {
@@ -65,6 +69,17 @@ export function ParentDashboard() {
         }
     };
 
+    const handleProfileSave = async (data: { username?: string; displayName?: string }) => {
+        await updateProfile(data);
+    };
+
+    const handleProfileModalClose = () => {
+        if (state.isNewGoogleUser) {
+            clearNewGoogleUser();
+        }
+        setShowEditProfile(false);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
@@ -73,6 +88,18 @@ export function ParentDashboard() {
                     <div className="flex items-center gap-2">
                         <LayoutDashboard className="w-6 h-6 text-purple-600" />
                         <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
+                        {state.user && (
+                            <button
+                                onClick={() => setShowEditProfile(true)}
+                                className="ml-2 flex items-center gap-1 text-sm text-gray-500 hover:text-purple-600 transition-colors"
+                                title={t('editProfile')}
+                            >
+                                <span className="text-gray-600 font-medium">
+                                    {state.user.displayName || state.user.username}
+                                </span>
+                                <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                     </div>
                     <div className="flex items-center gap-4">
                         <NotificationBell />
@@ -97,13 +124,23 @@ export function ParentDashboard() {
                             <h2 className="text-2xl font-bold text-gray-900">{t('studentOverview')}</h2>
                             <p className="text-gray-500">{t('studentOverviewDesc')}</p>
                         </div>
-                        <Button
-                            onClick={() => setShowLinkModal(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <UserPlus className="w-4 h-4" />
-                            {t('linkStudent')}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={() => setShowCreateModal(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                {t('createStudent')}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowLinkModal(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <UserPlus className="w-4 h-4" />
+                                {t('linkStudent')}
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Pending Link Requests */}
@@ -180,12 +217,32 @@ export function ParentDashboard() {
                 )}
             </AnimatePresence>
 
+            {/* Create Student Modal */}
+            <CreateStudentModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={handleLinkSuccess}
+            />
+
             {/* Link Student Modal */}
             <StudentSearchModal
                 isOpen={showLinkModal}
                 onClose={() => setShowLinkModal(false)}
                 onSuccess={handleLinkSuccess}
             />
+
+            {/* Profile Completion / Edit Modal */}
+            <AnimatePresence>
+                {(state.isNewGoogleUser || showEditProfile) && state.user && (
+                    <CompleteProfileModal
+                        mode={state.isNewGoogleUser ? 'complete' : 'edit'}
+                        currentUsername={state.user.username}
+                        currentDisplayName={state.user.displayName}
+                        onSave={handleProfileSave}
+                        onClose={handleProfileModalClose}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

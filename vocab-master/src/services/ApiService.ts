@@ -16,6 +16,7 @@ export interface User {
   role: 'student' | 'parent' | 'admin';
   email: string | null;
   emailVerified: boolean;
+  authProvider: 'local' | 'google';
   createdAt: string;
 }
 
@@ -110,6 +111,7 @@ export interface AdminUserStats {
   quizzes_taken: number;
   total_words_studied: number;
   last_study_date: string | null;
+  last_seen_at: string | null;
   avg_accuracy: number | null;
   current_streak: number;
   sessions_this_week: number;
@@ -317,6 +319,48 @@ class ApiServiceClass {
     const data: AuthResponse = await response.json();
     this.setTokens(data.tokens);
     return data;
+  }
+
+  async googleAuth(
+    token: string,
+    tokenType: 'id_token' | 'access_token' = 'id_token',
+    username?: string
+  ): Promise<AuthResponse & { isNewUser: boolean }> {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, tokenType, username }),
+    });
+
+    if (!response.ok) {
+      const errorData: ApiError = await response.json().catch(() => ({
+        error: 'Unknown Error',
+        message: 'Google authentication failed'
+      }));
+      throw new Error(errorData.message);
+    }
+
+    const data = await response.json();
+    this.setTokens(data.tokens);
+    return data;
+  }
+
+  async updateProfile(data: { username?: string; displayName?: string }): Promise<{ user: User }> {
+    return this.fetchWithAuth<{ user: User }>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createStudentForParent(
+    username: string,
+    password: string,
+    displayName?: string
+  ): Promise<{ success: boolean; user: User }> {
+    return this.fetchWithAuth<{ success: boolean; user: User }>('/auth/create-student', {
+      method: 'POST',
+      body: JSON.stringify({ username, password, displayName }),
+    });
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {

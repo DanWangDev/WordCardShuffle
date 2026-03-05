@@ -133,6 +133,32 @@ export const importDataSchema = z.object({
   }).optional()
 });
 
+// Google OAuth
+export const googleAuthSchema = z.object({
+  token: z.string().min(1, 'Google token is required'),
+  tokenType: z.enum(['id_token', 'access_token']).default('id_token'),
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+    .optional()
+});
+
+// Parent creates student account
+export const createStudentByParentSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(100, 'Password must be at most 100 characters'),
+  displayName: z.string()
+    .min(1)
+    .max(50)
+    .optional()
+});
+
 // Link request schemas
 export const createLinkRequestSchema = z.object({
   studentId: z.number().int().positive('Student ID is required'),
@@ -147,6 +173,21 @@ export const linkRequestActionSchema = z.object({
 
 export const studentSearchSchema = z.object({
   q: z.string().min(2, 'Search query must be at least 2 characters')
+});
+
+// Self-service profile update
+export const updateProfileSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+    .optional(),
+  displayName: z.string()
+    .min(1, 'Display name must not be empty')
+    .max(50, 'Display name must be at most 50 characters')
+    .optional(),
+}).refine(data => data.username !== undefined || data.displayName !== undefined, {
+  message: 'At least one field must be provided'
 });
 
 // Wordlist validation schemas
