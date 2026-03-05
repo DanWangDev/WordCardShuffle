@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isNewGoogleUser: boolean;
 }
 
 type AuthAction =
@@ -15,7 +16,9 @@ type AuthAction =
   | { type: 'AUTH_SUCCESS'; payload: User }
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'SET_NEW_GOOGLE_USER'; payload: boolean }
+  | { type: 'UPDATE_USER'; payload: User };
 
 interface AuthContextType {
   state: AuthState;
@@ -26,6 +29,8 @@ interface AuthContextType {
   forgotPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  updateProfile: (data: { username?: string; displayName?: string }) => Promise<void>;
+  clearNewGoogleUser: () => void;
 }
 
 const initialState: AuthState = {
@@ -33,6 +38,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  isNewGoogleUser: false,
 };
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
@@ -65,6 +71,10 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       };
     case 'CLEAR_ERROR':
       return { ...state, error: null };
+    case 'SET_NEW_GOOGLE_USER':
+      return { ...state, isNewGoogleUser: action.payload };
+    case 'UPDATE_USER':
+      return { ...state, user: action.payload };
     default:
       return state;
   }
@@ -115,6 +125,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const response = await ApiService.googleAuth(token, 'id_token', username);
         dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
+        if (response.isNewUser) {
+          dispatch({ type: 'SET_NEW_GOOGLE_USER', payload: true });
+        }
       } catch (error) {
         dispatch({
           type: 'AUTH_FAILURE',
@@ -185,6 +198,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'LOGOUT' });
   }, []);
 
+  const updateProfile = useCallback(
+    async (data: { username?: string; displayName?: string }) => {
+      const response = await ApiService.updateProfile(data);
+      dispatch({ type: 'UPDATE_USER', payload: response.user });
+    },
+    []
+  );
+
+  const clearNewGoogleUser = useCallback(() => {
+    dispatch({ type: 'SET_NEW_GOOGLE_USER', payload: false });
+  }, []);
+
   const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
   }, []);
@@ -200,6 +225,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         forgotPassword,
         logout,
         clearError,
+        updateProfile,
+        clearNewGoogleUser,
       }}
     >
       {children}

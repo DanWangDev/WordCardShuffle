@@ -199,6 +199,11 @@ export interface AuthResponse {
   tokens: TokenPair;
 }
 
+export interface UpdateProfileRequest {
+  username?: string;
+  displayName?: string;
+}
+
 export interface UpdateSettingsRequest {
   soundEnabled?: boolean;
   autoAdvance?: boolean;

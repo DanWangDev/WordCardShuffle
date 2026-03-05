@@ -179,6 +179,11 @@ export const userRepository = {
     stmt.run(displayName, userId);
   },
 
+  updateUsername(userId: number, username: string): void {
+    const stmt = db.prepare('UPDATE users SET username = ? WHERE id = ?');
+    stmt.run(username, userId);
+  },
+
   delete(userId: number): void {
     const stmt = db.prepare('DELETE FROM users WHERE id = ?');
     stmt.run(userId);

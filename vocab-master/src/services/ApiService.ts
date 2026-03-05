@@ -345,6 +345,13 @@ class ApiServiceClass {
     return data;
   }
 
+  async updateProfile(data: { username?: string; displayName?: string }): Promise<{ user: User }> {
+    return this.fetchWithAuth<{ user: User }>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
   async createStudentForParent(
     username: string,
     password: string,

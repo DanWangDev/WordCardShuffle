@@ -11,7 +11,8 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   createStudentByParentSchema,
-  googleAuthSchema
+  googleAuthSchema,
+  updateProfileSchema
 } from '../middleware/validate.js';
 import type {
   AuthRequest,
@@ -22,7 +23,8 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   CreateStudentByParentRequest,
-  GoogleAuthRequest
+  GoogleAuthRequest,
+  UpdateProfileRequest
 } from '../types/index.js';
 
 const router = Router();
@@ -229,6 +231,26 @@ router.post('/create-student', authMiddleware, requireRole(['parent']), validate
       res.status(409).json({ error: 'Conflict', message });
     } else if (message === 'Only parents can create student accounts') {
       res.status(403).json({ error: 'Forbidden', message });
+    } else {
+      res.status(400).json({ error: 'Bad Request', message });
+    }
+  }
+});
+
+// PATCH /api/auth/profile - Self-service profile update
+router.patch('/profile', authMiddleware, validate(updateProfileSchema), async (req: AuthRequest, res: Response) => {
+  try {
+    const { username, displayName } = req.body as UpdateProfileRequest;
+    const user = authService.updateProfile(req.user!.userId, { username, displayName });
+
+    res.json({ user });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Profile update failed';
+
+    if (message === 'Username already taken') {
+      res.status(409).json({ error: 'Conflict', message });
+    } else if (message === 'User not found') {
+      res.status(404).json({ error: 'Not Found', message });
     } else {
       res.status(400).json({ error: 'Bad Request', message });
     }

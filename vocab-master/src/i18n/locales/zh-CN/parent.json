@@ -50,5 +50,6 @@
   "passwordsDoNotMatch": "两次密码不一致",
   "creating": "创建中...",
   "studentCreated": "学生账号创建成功！",
-  "createStudentError": "创建学生账号失败"
+  "createStudentError": "创建学生账号失败",
+  "editProfile": "编辑资料"
 }

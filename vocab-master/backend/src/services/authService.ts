@@ -428,6 +428,28 @@ export const authService = {
     return userRowToUser(userRow);
   },
 
+  updateProfile(userId: number, updates: { username?: string; displayName?: string }): User {
+    const userRow = userRepository.findById(userId);
+    if (!userRow) {
+      throw new Error('User not found');
+    }
+
+    if (updates.username !== undefined) {
+      const existing = userRepository.findByUsername(updates.username);
+      if (existing && existing.id !== userId) {
+        throw new Error('Username already taken');
+      }
+      userRepository.updateUsername(userId, updates.username);
+    }
+
+    if (updates.displayName !== undefined) {
+      userRepository.updateDisplayName(userId, updates.displayName);
+    }
+
+    const updatedRow = userRepository.findById(userId)!;
+    return userRowToUser(updatedRow);
+  },
+
   cleanupExpiredTokens(): void {
     tokenRepository.deleteExpired();
     passwordResetRepository.deleteExpired();

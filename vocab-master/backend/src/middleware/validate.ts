@@ -175,6 +175,21 @@ export const studentSearchSchema = z.object({
   q: z.string().min(2, 'Search query must be at least 2 characters')
 });
 
+// Self-service profile update
+export const updateProfileSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+    .optional(),
+  displayName: z.string()
+    .min(1, 'Display name must not be empty')
+    .max(50, 'Display name must be at most 50 characters')
+    .optional(),
+}).refine(data => data.username !== undefined || data.displayName !== undefined, {
+  message: 'At least one field must be provided'
+});
+
 // Wordlist validation schemas
 export const createWordlistSchema = z.object({
   name: z.string().min(1).max(200),

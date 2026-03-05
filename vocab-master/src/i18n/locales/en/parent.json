@@ -50,5 +50,6 @@
   "passwordsDoNotMatch": "Passwords do not match",
   "creating": "Creating...",
   "studentCreated": "Student account created successfully!",
-  "createStudentError": "Failed to create student account"
+  "createStudentError": "Failed to create student account",
+  "editProfile": "Edit Profile"
 }

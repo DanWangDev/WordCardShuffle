@@ -10,6 +10,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isNewGoogleUser: boolean;
 }
 
 type AuthAction =
@@ -17,7 +18,9 @@ type AuthAction =
   | { type: 'AUTH_SUCCESS'; payload: User }
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'SET_NEW_GOOGLE_USER'; payload: boolean }
+  | { type: 'UPDATE_USER'; payload: User };
 
 interface AuthContextType {
   state: AuthState;
@@ -31,6 +34,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   clearError: () => void;
   migrateLocalData: () => Promise<void>;
+  updateProfile: (data: { username?: string; displayName?: string }) => Promise<void>;
+  clearNewGoogleUser: () => void;
 }
 
 // Initial state
@@ -39,6 +44,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  isNewGoogleUser: false,
 };
 
 // Reducer
@@ -72,6 +78,10 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       };
     case 'CLEAR_ERROR':
       return { ...state, error: null };
+    case 'SET_NEW_GOOGLE_USER':
+      return { ...state, isNewGoogleUser: action.payload };
+    case 'UPDATE_USER':
+      return { ...state, user: action.payload };
     default:
       return state;
   }
@@ -133,6 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await ApiService.googleAuth(accessToken, 'access_token', username);
       dispatch({ type: 'AUTH_SUCCESS', payload: response.user });
+      if (response.isNewUser) {
+        dispatch({ type: 'SET_NEW_GOOGLE_USER', payload: true });
+      }
     } catch (error) {
       dispatch({
         type: 'AUTH_FAILURE',
@@ -217,6 +230,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
+  const updateProfile = async (data: { username?: string; displayName?: string }) => {
+    try {
+      const response = await ApiService.updateProfile(data);
+      dispatch({ type: 'UPDATE_USER', payload: response.user });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const clearNewGoogleUser = () => {
+    dispatch({ type: 'SET_NEW_GOOGLE_USER', payload: false });
+  };
+
   // Migrate localStorage data to the backend
   const migrateLocalData = async () => {
     try {
@@ -260,6 +286,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         clearError,
         migrateLocalData,
+        updateProfile,
+        clearNewGoogleUser,
       }}
     >
       {children}
