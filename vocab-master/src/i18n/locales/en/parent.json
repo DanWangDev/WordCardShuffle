@@ -61,5 +61,13 @@
   "quizWordsToRevise": "Quiz Words to Revise",
   "basedOnQuizResults": "Based on quiz results",
   "copyPracticeLink": "Copy Practice Link",
-  "linkCopied": "Copied!"
+  "linkCopied": "Copied!",
+  "onTrackSettings": "Goals",
+  "onTrackThresholds": "On Track Thresholds",
+  "targetDaysPerWeek": "Target days per week",
+  "targetMinutesPerDay": "Target minutes per day",
+  "minutesPerDayValue": "{{count}} min/day",
+  "save": "Save",
+  "onTrack": "On Track",
+  "belowTarget": "Below Target"
 }
