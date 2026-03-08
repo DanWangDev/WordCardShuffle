@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import { authMiddleware, requireRole } from '../middleware/auth';
 import { validate, resetUserPasswordSchema } from '../middleware/validate';
 import { authService } from '../services/authService';
+import { auditService } from '../services/auditService';
+import { logger } from '../services/logger';
 
 const router = Router();
 
@@ -109,7 +111,7 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
 
         res.json(usersWithStats);
     } catch (error) {
-        console.error('Fetch users error:', error);
+        logger.error('Fetch users error', { error: String(error) });
         res.status(500).json({ error: 'Failed to fetch users' });
     }
 });
@@ -158,13 +160,13 @@ router.get('/users/:id/details', requireRole(['admin', 'parent']), (req: any, re
 
         res.json({ quizHistory, studyHistory, weakWords });
     } catch (error) {
-        console.error('Fetch user details error:', error);
+        logger.error('Fetch user details error', { error: String(error) });
         res.status(500).json({ error: 'Failed to fetch user details' });
     }
 });
 
 // Update User Role
-router.patch('/users/:id/role', (req, res) => {
+router.patch('/users/:id/role', requireRole(['admin']), (req: any, res) => {
     try {
         const { role } = req.body;
         const userId = req.params.id;
@@ -174,6 +176,7 @@ router.patch('/users/:id/role', (req, res) => {
             return;
         }
 
+        const oldUser = db.prepare('SELECT role FROM users WHERE id = ?').get(userId) as { role: string } | undefined;
         const stmt = db.prepare('UPDATE users SET role = ? WHERE id = ?');
         const result = stmt.run(role, userId);
 
@@ -182,15 +185,23 @@ router.patch('/users/:id/role', (req, res) => {
             return;
         }
 
+        auditService.log({
+            action: 'user.role_change',
+            actorId: req.user.userId,
+            targetId: Number(userId),
+            details: { oldRole: oldUser?.role, newRole: role },
+            ip: req.ip
+        });
+
         res.json({ success: true, message: 'Role updated' });
     } catch (error) {
-        console.error('Update role error:', error);
+        logger.error('Update role error', { error: String(error) });
         res.status(500).json({ error: 'Failed to update role' });
     }
 });
 
 // Link Student to Parent
-router.patch('/users/:id/parent', (req, res) => {
+router.patch('/users/:id/parent', requireRole(['admin']), (req: any, res) => {
     try {
         const { parentId } = req.body; // Can be null to unlink
         const userId = req.params.id;
@@ -212,15 +223,23 @@ router.patch('/users/:id/parent', (req, res) => {
             return;
         }
 
+        auditService.log({
+            action: 'user.parent_link',
+            actorId: req.user.userId,
+            targetId: Number(userId),
+            details: { parentId: parentId ?? null },
+            ip: req.ip
+        });
+
         res.json({ success: true, message: 'Parent link updated' });
     } catch (error) {
-        console.error('Update parent link error:', error);
+        logger.error('Update parent link error', { error: String(error) });
         res.status(500).json({ error: 'Failed to update parent link' });
     }
 });
 
 // Create New User
-router.post('/users', async (req, res) => {
+router.post('/users', requireRole(['admin']), async (req: any, res) => {
     try {
         const { username, password, role, parentId, email } = req.body;
 
@@ -277,10 +296,18 @@ router.post('/users', async (req, res) => {
             return newId;
         })();
 
+        auditService.log({
+            action: 'user.create',
+            actorId: req.user.userId,
+            targetId: Number(result),
+            details: { username, role, parentId: parentId ?? null },
+            ip: req.ip
+        });
+
         res.status(201).json({ success: true, userId: result, message: 'User created' });
 
     } catch (error) {
-        console.error('Create user error:', error);
+        logger.error('Create user error', { error: String(error) });
         res.status(500).json({ error: 'Failed to create user' });
     }
 });
@@ -315,9 +342,16 @@ router.patch('/users/:id/email', requireRole(['admin']), (req, res) => {
             return;
         }
 
+        auditService.log({
+            action: 'user.email_change',
+            actorId: (req as any).user.userId,
+            targetId: userId,
+            ip: req.ip
+        });
+
         res.json({ success: true, message: 'Email updated' });
     } catch (error) {
-        console.error('Update email error:', error);
+        logger.error('Update email error', { error: String(error) });
         res.status(500).json({ error: 'Failed to update email' });
     }
 });
@@ -335,6 +369,13 @@ router.patch('/users/:id/password', requireRole(['admin', 'parent']), validate(r
             userId,
             password
         );
+
+        auditService.log({
+            action: 'user.password_reset',
+            actorId: requestUser.userId,
+            targetId: userId,
+            ip: req.ip
+        });
 
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (error) {
@@ -402,9 +443,17 @@ router.delete('/users/:id', requireRole(['admin']), (req: any, res) => {
             db.prepare('DELETE FROM users WHERE id = ?').run(userId);
         })();
 
+        auditService.log({
+            action: 'user.delete',
+            actorId: requestingUser.userId,
+            targetId: userId,
+            details: { username: targetUser.username, role: targetUser.role },
+            ip: req.ip
+        });
+
         res.json({ success: true, message: `User ${targetUser.username} deleted successfully` });
     } catch (error) {
-        console.error('Delete user error:', error);
+        logger.error('Delete user error', { error: String(error) });
         res.status(500).json({ error: 'Failed to delete user' });
     }
 });

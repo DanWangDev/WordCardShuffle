@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import { logger } from '../services/logger.js';
 import { authService } from '../services/authService.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import {
@@ -31,15 +32,38 @@ import type {
 
 const router = Router();
 
+const REFRESH_TOKEN_COOKIE = 'vocab_refresh_token';
+const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+
+function setRefreshTokenCookie(res: Response, refreshToken: string): void {
+  res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: REFRESH_TOKEN_MAX_AGE,
+    path: '/api/auth',
+  });
+}
+
+function clearRefreshTokenCookie(res: Response): void {
+  res.clearCookie(REFRESH_TOKEN_COOKIE, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/api/auth',
+  });
+}
+
 // POST /api/auth/register (legacy - creates student)
 router.post('/register', verifyTurnstile, validate(registerSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { username, password, displayName } = req.body as RegisterRequest;
     const result = await authService.register(username, password, displayName);
 
+    setRefreshTokenCookie(res, result.tokens.refreshToken);
     res.status(201).json({
       user: result.user,
-      tokens: result.tokens
+      tokens: { accessToken: result.tokens.accessToken }
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Registration failed';
@@ -58,9 +82,10 @@ router.post('/register/student', verifyTurnstile, validate(registerStudentSchema
     const { username, password, displayName } = req.body as RegisterStudentRequest;
     const result = await authService.registerStudent(username, password, displayName);
 
+    setRefreshTokenCookie(res, result.tokens.refreshToken);
     res.status(201).json({
       user: result.user,
-      tokens: result.tokens
+      tokens: { accessToken: result.tokens.accessToken }
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Registration failed';
@@ -79,9 +104,10 @@ router.post('/register/parent', verifyTurnstile, validate(registerParentSchema),
     const { username, password, email, displayName } = req.body as RegisterParentRequest;
     const result = await authService.registerParent(username, password, email, displayName);
 
+    setRefreshTokenCookie(res, result.tokens.refreshToken);
     res.status(201).json({
       user: result.user,
-      tokens: result.tokens
+      tokens: { accessToken: result.tokens.accessToken }
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Registration failed';
@@ -107,7 +133,7 @@ router.post('/forgot-password', validate(forgotPasswordSchema), async (req: Auth
     });
   } catch (error) {
     // Log but don't expose errors
-    console.error('[Auth] Password reset error:', error);
+    logger.error('Password reset error', { error: String(error) });
     res.json({
       message: 'If an account exists with this email, a password reset link has been sent.'
     });
@@ -148,9 +174,10 @@ router.post('/login', checkBruteForce, verifyTurnstile, validate(loginSchema), a
     const result = await authService.login(username, password);
 
     recordSuccessfulLogin(username);
+    setRefreshTokenCookie(res, result.tokens.refreshToken);
     res.json({
       user: result.user,
-      tokens: result.tokens
+      tokens: { accessToken: result.tokens.accessToken }
     });
   } catch (error) {
     const { username } = req.body as LoginRequest;
@@ -167,12 +194,14 @@ router.post('/login', checkBruteForce, verifyTurnstile, validate(loginSchema), a
 // POST /api/auth/logout
 router.post('/logout', (req: AuthRequest, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    // Read from cookie first, fall back to body (mobile clients)
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || req.body?.refreshToken;
 
     if (refreshToken) {
       authService.logout(refreshToken);
     }
 
+    clearRefreshTokenCookie(res);
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({
@@ -183,13 +212,22 @@ router.post('/logout', (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/auth/refresh
-router.post('/refresh', validate(refreshSchema), async (req: AuthRequest, res: Response) => {
+router.post('/refresh', async (req: AuthRequest, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    // Read from cookie first, fall back to body (mobile clients)
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] || req.body?.refreshToken;
+
+    if (!refreshToken) {
+      res.status(401).json({ error: 'Unauthorized', message: 'Refresh token is required' });
+      return;
+    }
+
     const tokens = await authService.refresh(refreshToken);
 
-    res.json({ tokens });
+    setRefreshTokenCookie(res, tokens.refreshToken);
+    res.json({ tokens: { accessToken: tokens.accessToken } });
   } catch (error) {
+    clearRefreshTokenCookie(res);
     res.status(401).json({
       error: 'Unauthorized',
       message: error instanceof Error ? error.message : 'Token refresh failed'
@@ -200,12 +238,23 @@ router.post('/refresh', validate(refreshSchema), async (req: AuthRequest, res: R
 // POST /api/auth/google - Google OAuth login/register for parents
 router.post('/google', validate(googleAuthSchema), async (req: AuthRequest, res: Response) => {
   try {
-    const { token, tokenType, username } = req.body as GoogleAuthRequest;
-    const result = await authService.googleAuth(token, tokenType, username);
+    const { token, tokenType, username, confirmLink } = req.body as GoogleAuthRequest & { confirmLink?: boolean };
+    const result = await authService.googleAuth(token, tokenType, username, confirmLink);
 
+    // Account linking requires explicit user consent
+    if ('linkPending' in result && result.linkPending) {
+      res.status(200).json({
+        linkPending: true,
+        email: result.email,
+        message: 'An account with this email already exists. Please confirm to link your Google account.'
+      });
+      return;
+    }
+
+    setRefreshTokenCookie(res, result.tokens.refreshToken);
     res.status(result.isNewUser ? 201 : 200).json({
       user: result.user,
-      tokens: result.tokens,
+      tokens: { accessToken: result.tokens.accessToken },
       isNewUser: result.isNewUser
     });
   } catch (error) {

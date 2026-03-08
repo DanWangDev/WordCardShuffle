@@ -30,10 +30,22 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - Push notifications on mobile via Expo push tokens
 
 ### Security
-- **Rate limiting** — tiered IP-based limits (registration: 5/hr, auth: 20/15min, password reset: 5/hr)
+- **Rate limiting** — tiered IP-based limits (registration: 5/hr, auth: 20/15min, password reset: 5/hr, token validation: 10/15min)
 - **Cloudflare Turnstile** — invisible bot challenge on web login and registration forms (zero user friction)
 - **Brute-force protection** — progressive per-username lockout on login (5 fails: 30s, 10: 5min, 15: 30min)
-- **Mobile bypass** — mobile clients use `X-Client-Platform` header to skip Turnstile (protected by rate limits + Google token validation)
+- **Mobile auth** — mobile clients authenticate via signed app token (`MOBILE_APP_SECRET`) instead of Turnstile
+- **Token security** — refresh tokens hashed with SHA-256 in database; served as `httpOnly`, `secure`, `sameSite=strict` cookies (XSS-safe)
+- **Password policy** — 8-character minimum enforced on registration, password reset, and admin reset paths
+- **IDOR protection** — private wordlists return 403 for non-owners; parent endpoints verify parent-child relationship
+- **Google linking consent** — linking a Google account to an existing email requires explicit user confirmation
+- **Security headers** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- **Input validation** — Zod schemas on auth endpoints and quiz results; file type validation on wordlist imports
+- **Startup checks** — app refuses to start without `JWT_SECRET` in any environment or without `CORS_ORIGIN` in production
+- **Audit logging** — all admin operations (role changes, user creation/deletion, password resets) logged to `audit_log` table with actor, target, and IP
+- **Structured logging** — JSON-formatted log output for all backend services (compatible with log aggregation tools)
+- **Database backups** — automated backup script with configurable retention (`scripts/backup.sh`)
+
+See [docs/security-hardening.md](docs/security-hardening.md) for the full security audit report.
 
 ### Internationalisation
 - English and Simplified Chinese (zh-CN) across all screens
@@ -66,10 +78,10 @@ vocab-master/
 │   ├── src/
 │   │   ├── config/           # Database, migration runner
 │   │   ├── middleware/       # Auth, validation, rate limiting
-│   │   ├── migrations/       # Sequential DB migrations (001–012)
+│   │   ├── migrations/       # Sequential DB migrations (001–013)
 │   │   ├── repositories/     # Data access layer (SQLite)
 │   │   ├── routes/           # Express route handlers
-│   │   ├── services/         # Business logic (auth, email, Google OAuth)
+│   │   ├── services/         # Business logic (auth, email, Google OAuth, audit, logger)
 │   │   ├── types/            # Shared TypeScript interfaces
 │   │   └── index.ts          # Server entry point
 │   └── Dockerfile
@@ -93,6 +105,7 @@ vocab-master/
 │   ├── i18n/                 # i18next config and locale files (en, zh-CN)
 │   └── services/             # ApiService, StorageService
 ├── shared/                   # Shared types and i18n locales
+├── scripts/                  # Operational scripts (backup, etc.)
 ├── docs/                     # Architecture and planning documents
 ├── docker-compose.yml        # Multi-container orchestration
 ├── frontend.Dockerfile       # Web frontend build
@@ -223,7 +236,7 @@ docker-compose up --build -d
 Services:
 - **Frontend:** http://localhost:8080
 - **Backend API:** http://localhost:9876/api/health
-- **DB Viewer:** http://localhost:8090 (SQLite web UI)
+- **DB Viewer:** http://localhost:8090 (SQLite web UI, localhost only)
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
 
@@ -231,10 +244,11 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `JWT_SECRET` | Yes | Secret key for JWT signing |
+| `JWT_SECRET` | Yes | Secret key for JWT signing (app won't start without it) |
+| `NODE_ENV` | No | Environment (`development` or `production`). Controls startup checks and Turnstile behaviour |
 | `DATABASE_PATH` | No | SQLite database file path (default: `./data/vocab-master.db`) |
 | `PORT` | No | Backend port (default: `9876`) |
-| `CORS_ORIGIN` | No | Allowed CORS origin (default: `http://localhost:8080`) |
+| `CORS_ORIGIN` | Prod | Allowed CORS origin. **Required in production** (default in dev: `http://localhost:5173`) |
 | `VITE_API_URL` | No | Frontend API base URL (default: `http://localhost:9876/api`) |
 | `VITE_GOOGLE_CLIENT_ID` | No | Google OAuth client ID for web |
 | `GOOGLE_CLIENT_ID_WEB` | No | Google OAuth client ID (backend validation) |
@@ -242,14 +256,15 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
 | `GOOGLE_CLIENT_ID_ANDROID` | No | Google OAuth client ID for Android |
 | `RESEND_API_KEY` | No | Resend API key for transactional emails |
 | `EMAIL_FROM` | No | Sender email address |
-| `TURNSTILE_SECRET_KEY` | No | Cloudflare Turnstile secret key (bot protection). If unset, verification is skipped. |
-| `TURNSTILE_SITE_KEY` | No | Cloudflare Turnstile site key (passed as `VITE_TURNSTILE_SITE_KEY` build arg). If unset, widget is not rendered. |
+| `TURNSTILE_SECRET_KEY` | Prod | Cloudflare Turnstile secret key. In dev, verification is skipped if unset. In production, returns 503 if unset |
+| `TURNSTILE_SITE_KEY` | No | Cloudflare Turnstile site key (passed as `VITE_TURNSTILE_SITE_KEY` build arg). If unset, widget is not rendered |
+| `MOBILE_APP_SECRET` | No | Shared secret for mobile app Turnstile bypass. Generate with `openssl rand -hex 32` |
 
 ## Database
 
-SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `012`) and tracked in a `migrations` table.
+SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `013`) and tracked in a `migrations` table.
 
-Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`.
+Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`, `audit_log`.
 
 ## License
 

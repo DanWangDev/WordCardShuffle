@@ -6,9 +6,13 @@ import { tokenRepository } from '../repositories/tokenRepository.js';
 import { passwordResetRepository } from '../repositories/passwordResetRepository.js';
 import { emailService } from './emailService.js';
 import { googleAuthService } from './googleAuthService.js';
+import { logger } from './logger.js';
 import type { User, JWTPayload, TokenPair, UserRow } from '../types/index.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET === 'dev-secret-change-in-production') {
+  throw new Error('FATAL: JWT_SECRET environment variable must be set to a secure value');
+}
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 const PASSWORD_RESET_TOKEN_EXPIRY_HOURS = 1;
@@ -48,8 +52,8 @@ export const authService = {
     }
 
     // Validate password
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters');
     }
 
     // Hash password
@@ -82,8 +86,8 @@ export const authService = {
     }
 
     // Validate password
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters');
     }
 
     // Validate email format
@@ -104,7 +108,7 @@ export const authService = {
 
     // Send welcome email (don't await - fire and forget)
     emailService.sendWelcomeEmail(email, displayName).catch(err => {
-      console.error('[AuthService] Failed to send welcome email:', err);
+      logger.error('Failed to send welcome email', { error: String(err) });
     });
 
     return { user, tokens };
@@ -115,46 +119,52 @@ export const authService = {
    * Always returns void to prevent email enumeration
    */
   async requestPasswordReset(email: string): Promise<void> {
-    // Find user by email
-    const userRow = userRepository.findByEmail(email);
+    const startTime = Date.now();
+    const MIN_RESPONSE_TIME = 250;
 
-    // If user doesn't exist, add artificial delay then return (prevent timing attack)
-    if (!userRow) {
-      await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 100));
-      return;
+    try {
+      const userRow = userRepository.findByEmail(email);
+      if (!userRow) {
+        return;
+      }
+
+      // Check rate limiting (max 3 tokens in last 15 minutes)
+      const recentTokens = passwordResetRepository.countRecentByUserId(userRow.id, 15);
+      if (recentTokens >= 3) {
+        // Still return silently to prevent enumeration
+        return;
+      }
+
+      // Generate token with selector (for lookup) and validator (for comparison)
+      // Format: selector.validator where selector is plain and validator is hashed
+      const selector = crypto.randomBytes(16).toString('hex');
+      const validator = crypto.randomBytes(32).toString('hex');
+      const rawToken = `${selector}.${validator}`;
+
+      // Hash only the validator part for storage
+      const validatorHash = await bcrypt.hash(validator, TOKEN_HASH_ROUNDS);
+      // Store as "selector:validatorHash" for O(1) lookup by selector
+      const tokenHash = `${selector}:${validatorHash}`;
+
+      // Calculate expiry
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + PASSWORD_RESET_TOKEN_EXPIRY_HOURS);
+
+      // Store the token
+      passwordResetRepository.create(userRow.id, tokenHash, expiresAt);
+
+      // Send the email with the raw token (selector.validator)
+      await emailService.sendPasswordResetEmail(
+        email,
+        rawToken,
+        userRow.display_name || undefined
+      );
+    } finally {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < MIN_RESPONSE_TIME) {
+        await new Promise(resolve => setTimeout(resolve, MIN_RESPONSE_TIME - elapsed + Math.random() * 50));
+      }
     }
-
-    // Check rate limiting (max 3 tokens in last 15 minutes)
-    const recentTokens = passwordResetRepository.countRecentByUserId(userRow.id, 15);
-    if (recentTokens >= 3) {
-      // Still return silently to prevent enumeration
-      return;
-    }
-
-    // Generate token with selector (for lookup) and validator (for comparison)
-    // Format: selector.validator where selector is plain and validator is hashed
-    const selector = crypto.randomBytes(16).toString('hex');
-    const validator = crypto.randomBytes(32).toString('hex');
-    const rawToken = `${selector}.${validator}`;
-
-    // Hash only the validator part for storage
-    const validatorHash = await bcrypt.hash(validator, TOKEN_HASH_ROUNDS);
-    // Store as "selector:validatorHash" for O(1) lookup by selector
-    const tokenHash = `${selector}:${validatorHash}`;
-
-    // Calculate expiry
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + PASSWORD_RESET_TOKEN_EXPIRY_HOURS);
-
-    // Store the token
-    passwordResetRepository.create(userRow.id, tokenHash, expiresAt);
-
-    // Send the email with the raw token (selector.validator)
-    await emailService.sendPasswordResetEmail(
-      email,
-      rawToken,
-      userRow.display_name || undefined
-    );
   },
 
   /**
@@ -163,8 +173,8 @@ export const authService = {
    */
   async resetPassword(token: string, newPassword: string): Promise<void> {
     // Validate password
-    if (newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters');
     }
 
     // Parse the token
@@ -266,8 +276,8 @@ export const authService = {
       throw new Error('Username already taken');
     }
 
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters');
     }
 
     const passwordHash = await bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
@@ -309,8 +319,9 @@ export const authService = {
   async googleAuth(
     token: string,
     tokenType: 'id_token' | 'access_token' = 'id_token',
-    username?: string
-  ): Promise<{ user: User; tokens: TokenPair; isNewUser: boolean }> {
+    username?: string,
+    confirmLink?: boolean
+  ): Promise<{ user: User; tokens: TokenPair; isNewUser: boolean; linkPending?: undefined } | { linkPending: true; email: string; googleId: string }> {
     const googleInfo = await googleAuthService.verifyToken(token, tokenType);
 
     // 1. Check if user already linked with this Google ID
@@ -321,12 +332,18 @@ export const authService = {
       return { user, tokens, isNewUser: false };
     }
 
-    // 2. Check if user exists with matching email → link Google account
+    // 2. Check if user exists with matching email
     const existingByEmail = userRepository.findByEmail(googleInfo.email);
     if (existingByEmail) {
       if (existingByEmail.role !== 'parent') {
         throw new Error('Google sign-in is only available for parent accounts');
       }
+
+      // Require explicit consent before linking accounts
+      if (!confirmLink) {
+        return { linkPending: true, email: googleInfo.email, googleId: googleInfo.googleId };
+      }
+
       userRepository.linkGoogleAccount(existingByEmail.id, googleInfo.googleId);
       const updatedRow = userRepository.findById(existingByEmail.id)!;
       const user = userRowToUser(updatedRow);
@@ -469,8 +486,8 @@ export const authService = {
     newPassword: string
   ): Promise<void> {
     // Validate password
-    if (newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters');
     }
 
     // Get the target user
@@ -487,7 +504,7 @@ export const authService = {
       }
     } else if (requesterRole === 'parent') {
       // Parents can only reset passwords for their children
-      if (targetUser.parent_id !== requesterId) {
+      if (!targetUser.parent_id || targetUser.parent_id !== requesterId) {
         throw new Error('You can only reset passwords for your linked students');
       }
     } else {

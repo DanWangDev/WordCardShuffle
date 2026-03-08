@@ -7,11 +7,13 @@ dotenv.config({ path: path.join(process.cwd(), '../.env') });
 dotenv.config();
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase } from './config/database.js';
 import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
+import { logger } from './services/logger.js';
 
 const app = express();
 app.set('trust proxy', 1); // Trust first main proxy (likely Nginx/Docker)
@@ -29,6 +31,9 @@ setInterval(() => {
 app.use(helmet());
 
 // Parse CORS origins (supports comma-separated values)
+if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
+  throw new Error('FATAL: CORS_ORIGIN must be set in production');
+}
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : ['http://localhost:5173', 'http://localhost:5174'];
@@ -37,6 +42,7 @@ app.use(cors({
   origin: corsOrigins,
   credentials: true
 }));
+app.use(cookieParser());
 app.use(express.json());
 
 // Rate limiting for auth endpoints
@@ -93,6 +99,15 @@ const linkRequestLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Token validation rate limiter
+const tokenValidationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too Many Requests', message: 'Too many token validation attempts' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 // Wordlist import rate limiter
 const importLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -110,6 +125,7 @@ app.use('/api/auth/google', registrationLimiter);
 app.use('/api/auth', authLimiter);
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth/reset-password', passwordResetLimiter);
+app.use('/api/auth/validate-reset-token', tokenValidationLimiter);
 app.use('/api/link-requests/search', studentSearchLimiter);
 app.use('/api/link-requests', linkRequestLimiter);
 app.use('/api', generalLimiter);
@@ -140,7 +156,7 @@ app.use((_req, res) => {
 
 // Error handler
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', { error: err.message, stack: err.stack });
   res.status(500).json({
     error: 'Internal Server Error',
     message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
@@ -149,13 +165,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down...');
+  logger.info('SIGTERM received, shutting down...');
   closeDatabase();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down...');
+  logger.info('SIGINT received, shutting down...');
   closeDatabase();
   process.exit(0);
 });
@@ -163,8 +179,8 @@ process.on('SIGINT', () => {
 const HOST = process.env.HOST || '127.0.0.1';
 
 app.listen(Number(PORT), HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
-  console.log(`Health check: http://${HOST}:${PORT}/api/health`);
+  logger.info('Server started', { host: HOST, port: Number(PORT) });
+  logger.info('Health check available', { url: `http://${HOST}:${PORT}/api/health` });
 });
 
 export default app;
