@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LogIn, Loader2, KeyRound } from 'lucide-react';
 import { GoogleSignInButton } from './GoogleSignInButton';
-import { TurnstileWidget } from './TurnstileWidget';
+import { TurnstileWidget, isTurnstileEnabled } from './TurnstileWidget';
 
 interface LoginFormProps {
   onSubmit: (username: string, password: string, turnstileToken?: string) => Promise<void>;
@@ -77,9 +77,11 @@ export function LoginForm({ onSubmit, onGoogleLogin, onSwitchToRegister, onForgo
         </div>
       )}
 
+      <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(undefined)} />
+
       <button
         type="submit"
-        disabled={isLoading || !username.trim() || !password.trim()}
+        disabled={isLoading || !username.trim() || !password.trim() || (isTurnstileEnabled && !turnstileToken)}
         className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
       >
         {isLoading ? (
@@ -94,8 +96,6 @@ export function LoginForm({ onSubmit, onGoogleLogin, onSwitchToRegister, onForgo
           </>
         )}
       </button>
-
-      <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(undefined)} />
 
       {onGoogleLogin && (
         <>

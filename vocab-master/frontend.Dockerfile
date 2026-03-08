@@ -15,10 +15,12 @@ COPY . .
 # Build arguments
 ARG VITE_API_URL=http://localhost:3001/api
 ARG VITE_GOOGLE_CLIENT_ID=
+ARG VITE_TURNSTILE_SITE_KEY=
 
 # Set environment variables for build
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 
 # Build the application
 RUN npm run build

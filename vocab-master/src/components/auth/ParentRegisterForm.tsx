@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, UserPlus, Loader2, ArrowLeft, Users, Mail } from 'lucide-react';
-import { TurnstileWidget } from './TurnstileWidget';
+import { TurnstileWidget, isTurnstileEnabled } from './TurnstileWidget';
 
 interface ParentRegisterFormProps {
   onSubmit: (username: string, password: string, email: string, displayName?: string, turnstileToken?: string) => Promise<void>;
@@ -187,7 +187,7 @@ export function ParentRegisterForm({ onSubmit, onBack, isLoading, error }: Paren
 
       <button
         type="submit"
-        disabled={isLoading || !username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()}
+        disabled={isLoading || !username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim() || (isTurnstileEnabled && !turnstileToken)}
         className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-300 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
       >
         {isLoading ? (
