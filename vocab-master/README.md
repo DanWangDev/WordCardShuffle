@@ -34,6 +34,10 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - **Cloudflare Turnstile** — invisible bot challenge on web login and registration forms (zero user friction)
 - **Brute-force protection** — progressive per-username lockout on login (5 fails: 30s, 10: 5min, 15: 30min)
 - **Mobile auth** — mobile clients authenticate via signed app token (`MOBILE_APP_SECRET`) instead of Turnstile
+- **Token security** — refresh tokens hashed with SHA-256 in database; served as `httpOnly`, `secure`, `sameSite=strict` cookies (XSS-safe)
+- **Password policy** — 8-character minimum enforced on registration, password reset, and admin reset paths
+- **IDOR protection** — private wordlists return 403 for non-owners; parent endpoints verify parent-child relationship
+- **Google linking consent** — linking a Google account to an existing email requires explicit user confirmation
 - **Security headers** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
 - **Input validation** — Zod schemas on auth endpoints and quiz results; file type validation on wordlist imports
 - **Startup checks** — app refuses to start without `JWT_SECRET` in any environment or without `CORS_ORIGIN` in production
