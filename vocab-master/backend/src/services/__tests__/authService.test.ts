@@ -109,6 +109,11 @@ describe('authService', () => {
 
   describe('generateTokens', () => {
     it('generates valid access and refresh tokens', () => {
+      const db = getTestDb()
+      db.prepare(`
+        INSERT INTO users (id, username, password_hash, role, email_verified, auth_provider)
+        VALUES (1, 'testuser', 'hash', 'student', 0, 'local')
+      `).run()
       const tokens = authService.generateTokens(1, 'testuser', 'student')
 
       expect(tokens.accessToken).toBeTruthy()
@@ -118,6 +123,11 @@ describe('authService', () => {
     })
 
     it('generates an access token with correct payload', () => {
+      const db = getTestDb()
+      db.prepare(`
+        INSERT INTO users (id, username, password_hash, role, email_verified, auth_provider)
+        VALUES (42, 'myuser', 'hash', 'parent', 0, 'local')
+      `).run()
       const tokens = authService.generateTokens(42, 'myuser', 'parent')
       const decoded = jwt.verify(tokens.accessToken, JWT_SECRET) as { userId: number; username: string; role: string }
 
@@ -147,6 +157,11 @@ describe('authService', () => {
 
   describe('verifyAccessToken', () => {
     it('returns payload for valid token', () => {
+      const db = getTestDb()
+      db.prepare(`
+        INSERT INTO users (id, username, password_hash, role, email_verified, auth_provider)
+        VALUES (1, 'testuser', 'hash', 'student', 0, 'local')
+      `).run()
       const tokens = authService.generateTokens(1, 'testuser', 'student')
       const payload = authService.verifyAccessToken(tokens.accessToken)
 

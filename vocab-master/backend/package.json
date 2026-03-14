@@ -7,7 +7,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc && node -e \"const fs=require('fs'),p=require('path');const d=p.join('dist','data');fs.mkdirSync(d,{recursive:true});fs.copyFileSync(p.join('src','data','seed-words.json'),p.join(d,'seed-words.json'))\"",
     "start": "node dist/index.js",
-    "migrate": "tsx src/config/migrate.ts"
+    "migrate": "tsx src/config/migrate.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
