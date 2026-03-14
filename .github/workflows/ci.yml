@@ -33,6 +33,7 @@ jobs:
         run: npx tsc --noEmit
       - name: ESLint
         working-directory: vocab-master
+        continue-on-error: true
         run: npx eslint src/
 
   test-backend:

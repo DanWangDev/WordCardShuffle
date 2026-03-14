@@ -2,8 +2,11 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ChartDataItem = Record<string, any>;
+
 interface TrendChartProps {
-    data: any[];
+    data: ChartDataItem[];
     dataKey: string;
     xAxisKey: string;
     color?: string;
@@ -42,7 +45,7 @@ function formatDateLabel(dateStr: string): string {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function aggregateByDayFn(data: any[], xAxisKey: string, dataKey: string): any[] {
+function aggregateByDayFn(data: ChartDataItem[], xAxisKey: string, dataKey: string): ChartDataItem[] {
     const dayMap = new Map<string, number>();
 
     data.forEach(item => {
@@ -129,6 +132,7 @@ export function TrendChart({
         },
         labelFormatter: shouldAggregate
             ? (val: string) => formatDateLabel(val)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             : (_val: string, payload: readonly any[]) => {
                 if (payload && payload[0]) {
                     return payload[0].payload._label || '';

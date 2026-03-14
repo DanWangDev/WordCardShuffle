@@ -90,6 +90,7 @@ describe('TrendChart', () => {
   it('renders empty state when data is null-ish', () => {
     render(
       <TrendChart
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={null as unknown as any[]}
         dataKey="accuracy"
         xAxisKey="completed_at"
