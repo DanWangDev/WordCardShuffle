@@ -232,3 +232,53 @@ export const updateWordSchema = z.object({
   synonyms: z.array(z.string()).optional(),
   exampleSentences: z.array(z.string()).optional(),
 });
+
+// Admin: create user
+export const adminCreateUserSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password must be at most 100 characters'),
+  role: z.enum(['student', 'parent', 'admin'], {
+    errorMap: () => ({ message: 'Role must be student, parent, or admin' })
+  }),
+  parentId: z.number().int().positive().nullable().optional(),
+  email: z.string().email('Invalid email format').max(255).nullable().optional(),
+});
+
+// Admin: update role
+export const adminUpdateRoleSchema = z.object({
+  role: z.enum(['student', 'parent', 'admin'], {
+    errorMap: () => ({ message: 'Role must be student, parent, or admin' })
+  }),
+});
+
+// Admin: link parent
+export const adminLinkParentSchema = z.object({
+  parentId: z.number().int().positive().nullable(),
+});
+
+// Parent thresholds
+export const parentThresholdsSchema = z.object({
+  days_per_week: z.number().int().min(1).max(7),
+  minutes_per_day: z.number().int().min(5).max(120),
+});
+
+// Study session
+export const studySessionSchema = z.object({
+  wordsReviewed: z.number().int().min(0),
+  startTime: z.string().datetime({ offset: true }).or(z.string().min(1)),
+  endTime: z.string().datetime({ offset: true }).or(z.string().min(1)),
+  words: z.array(z.string()).optional(),
+});
+
+// Push token
+export const pushTokenSchema = z.object({
+  expoPushToken: z.string().min(1, 'expoPushToken is required'),
+  platform: z.enum(['ios', 'android'], {
+    errorMap: () => ({ message: 'platform must be "ios" or "android"' })
+  }),
+});
