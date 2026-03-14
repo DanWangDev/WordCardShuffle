@@ -15,6 +15,7 @@ import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoute
 import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
+import { AppError } from './errors/AppError.js';
 
 const app = express();
 app.set('trust proxy', 1); // Trust first main proxy (likely Nginx/Docker)
@@ -164,9 +165,20 @@ app.use((_req, res) => {
 
 // Error handler
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (err instanceof AppError) {
+    if (!err.isOperational) {
+      logger.error('Non-operational error', { error: err.message, code: err.code, stack: err.stack });
+    }
+    res.status(err.statusCode).json({
+      error: err.code,
+      message: err.message
+    });
+    return;
+  }
+
   logger.error('Unhandled error', { error: err.message, stack: err.stack });
   res.status(500).json({
-    error: 'Internal Server Error',
+    error: 'INTERNAL_ERROR',
     message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
   });
 });

@@ -1,12 +1,31 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { db } from '../config/database';
 import bcrypt from 'bcryptjs';
 import { authMiddleware, requireRole } from '../middleware/auth';
-import { validate, resetUserPasswordSchema } from '../middleware/validate';
+import { validate, resetUserPasswordSchema, adminCreateUserSchema, adminUpdateRoleSchema, adminLinkParentSchema, parentThresholdsSchema } from '../middleware/validate';
 import { authService } from '../services/authService';
 import { auditService } from '../services/auditService';
 import { logger } from '../services/logger';
 import { dashboardService } from '../services/dashboardService';
+import type { AuthRequest } from '../types/index';
+
+interface UserListRow {
+    id: number;
+    username: string;
+    display_name: string | null;
+    role: string;
+    parent_id: number | null;
+    email: string | null;
+    created_at: string;
+    last_study_date: string | null;
+    last_seen_at: string | null;
+}
+
+interface ParentThresholdRow {
+    parent_id: number;
+    days_per_week: number;
+    minutes_per_day: number;
+}
 
 const router = Router();
 
@@ -14,9 +33,9 @@ const router = Router();
 router.use(authMiddleware);
 
 // GET users with stats
-router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
+router.get('/users', requireRole(['admin', 'parent']), (req: AuthRequest, res: Response) => {
     try {
-        const user = req.user;
+        const user = req.user!;
         let query = `
       SELECT
         u.id, u.username, u.display_name, u.role, u.parent_id, u.email, u.created_at,
@@ -26,7 +45,7 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
       LEFT JOIN user_stats us ON u.id = us.user_id
     `;
 
-        let params: any[] = [];
+        const params: (string | number)[] = [];
 
         // If parent, only show their children
         if (user.role === 'parent') {
@@ -36,7 +55,7 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
 
         query += ' ORDER BY u.created_at DESC';
 
-        const users = db.prepare(query).all(...params) as any[];
+        const users = db.prepare(query).all(...params) as UserListRow[];
 
         // Add dashboard stats for each user
         const usersWithStats = users.map(u => {
@@ -55,14 +74,14 @@ router.get('/users', requireRole(['admin', 'parent']), (req: any, res) => {
 });
 
 // Get detailed user stats
-router.get('/users/:id/details', requireRole(['admin', 'parent']), (req: any, res) => {
+router.get('/users/:id/details', requireRole(['admin', 'parent']), (req: AuthRequest, res: Response) => {
     try {
         const userId = Number(req.params.id);
-        const requestUser = req.user;
+        const requestUser = req.user!;
 
         // If parent, verify they are requesting their own child
         if (requestUser.role === 'parent') {
-            const targetUser = db.prepare('SELECT parent_id FROM users WHERE id = ?').get(userId) as { parent_id: number };
+            const targetUser = db.prepare('SELECT parent_id FROM users WHERE id = ?').get(userId) as { parent_id: number } | undefined;
 
             if (!targetUser || targetUser.parent_id !== requestUser.userId) {
                 res.status(403).json({ error: 'Forbidden', message: 'You can only view your own students' });
@@ -79,15 +98,10 @@ router.get('/users/:id/details', requireRole(['admin', 'parent']), (req: any, re
 });
 
 // Update User Role
-router.patch('/users/:id/role', requireRole(['admin']), (req: any, res) => {
+router.patch('/users/:id/role', requireRole(['admin']), validate(adminUpdateRoleSchema), (req: AuthRequest, res: Response) => {
     try {
         const { role } = req.body;
         const userId = req.params.id;
-
-        if (!['student', 'parent', 'admin'].includes(role)) {
-            res.status(400).json({ error: 'Invalid role' });
-            return;
-        }
 
         const oldUser = db.prepare('SELECT role FROM users WHERE id = ?').get(userId) as { role: string } | undefined;
         const stmt = db.prepare('UPDATE users SET role = ? WHERE id = ?');
@@ -100,7 +114,7 @@ router.patch('/users/:id/role', requireRole(['admin']), (req: any, res) => {
 
         auditService.log({
             action: 'user.role_change',
-            actorId: req.user.userId,
+            actorId: req.user!.userId,
             targetId: Number(userId),
             details: { oldRole: oldUser?.role, newRole: role },
             ip: req.ip
@@ -114,14 +128,14 @@ router.patch('/users/:id/role', requireRole(['admin']), (req: any, res) => {
 });
 
 // Link Student to Parent
-router.patch('/users/:id/parent', requireRole(['admin']), (req: any, res) => {
+router.patch('/users/:id/parent', requireRole(['admin']), (req: AuthRequest, res: Response) => {
     try {
         const { parentId } = req.body; // Can be null to unlink
         const userId = req.params.id;
 
         // Verify parent exists and is actually a parent (optional, but good for integrity)
         if (parentId) {
-            const parent = db.prepare('SELECT role FROM users WHERE id = ?').get(parentId) as { role: string };
+            const parent = db.prepare('SELECT role FROM users WHERE id = ?').get(parentId) as { role: string } | undefined;
             if (!parent || parent.role !== 'parent') {
                 res.status(400).json({ error: 'Invalid parent ID provided' });
                 return;
@@ -138,7 +152,7 @@ router.patch('/users/:id/parent', requireRole(['admin']), (req: any, res) => {
 
         auditService.log({
             action: 'user.parent_link',
-            actorId: req.user.userId,
+            actorId: req.user!.userId,
             targetId: Number(userId),
             details: { parentId: parentId ?? null },
             ip: req.ip
@@ -152,7 +166,7 @@ router.patch('/users/:id/parent', requireRole(['admin']), (req: any, res) => {
 });
 
 // Create New User
-router.post('/users', requireRole(['admin']), async (req: any, res) => {
+router.post('/users', requireRole(['admin']), async (req: AuthRequest, res: Response) => {
     try {
         const { username, password, role, parentId, email } = req.body;
 
@@ -211,7 +225,7 @@ router.post('/users', requireRole(['admin']), async (req: any, res) => {
 
         auditService.log({
             action: 'user.create',
-            actorId: req.user.userId,
+            actorId: req.user!.userId,
             targetId: Number(result),
             details: { username, role, parentId: parentId ?? null },
             ip: req.ip
@@ -226,7 +240,7 @@ router.post('/users', requireRole(['admin']), async (req: any, res) => {
 });
 
 // Update User Email
-router.patch('/users/:id/email', requireRole(['admin']), (req, res) => {
+router.patch('/users/:id/email', requireRole(['admin']), (req: AuthRequest, res: Response) => {
     try {
         const userId = Number(req.params.id);
         const { email } = req.body;
@@ -257,7 +271,7 @@ router.patch('/users/:id/email', requireRole(['admin']), (req, res) => {
 
         auditService.log({
             action: 'user.email_change',
-            actorId: (req as any).user.userId,
+            actorId: req.user!.userId,
             targetId: userId,
             ip: req.ip
         });
@@ -270,10 +284,10 @@ router.patch('/users/:id/email', requireRole(['admin']), (req, res) => {
 });
 
 // Reset User Password (Admin or Parent for their children)
-router.patch('/users/:id/password', requireRole(['admin', 'parent']), validate(resetUserPasswordSchema), async (req: any, res) => {
+router.patch('/users/:id/password', requireRole(['admin', 'parent']), validate(resetUserPasswordSchema), async (req: AuthRequest, res: Response) => {
     try {
         const userId = Number(req.params.id);
-        const requestUser = req.user;
+        const requestUser = req.user!;
         const { password } = req.body;
 
         await authService.resetUserPassword(
@@ -305,10 +319,10 @@ router.patch('/users/:id/password', requireRole(['admin', 'parent']), validate(r
 });
 
 // Delete User
-router.delete('/users/:id', requireRole(['admin']), (req: any, res) => {
+router.delete('/users/:id', requireRole(['admin']), (req: AuthRequest, res: Response) => {
     try {
         const userId = Number(req.params.id);
-        const requestingUser = req.user;
+        const requestingUser = req.user!;
 
         // Prevent self-deletion
         if (userId === requestingUser.userId) {
@@ -372,14 +386,10 @@ router.delete('/users/:id', requireRole(['admin']), (req: any, res) => {
 });
 
 // GET parent thresholds
-router.get('/thresholds', requireRole(['parent']), (req: any, res) => {
+router.get('/thresholds', requireRole(['parent']), (req: AuthRequest, res: Response) => {
     try {
-        const parentId = req.user.userId;
-        const row = db.prepare('SELECT * FROM parent_thresholds WHERE parent_id = ?').get(parentId) as {
-            parent_id: number;
-            days_per_week: number;
-            minutes_per_day: number;
-        } | undefined;
+        const parentId = req.user!.userId;
+        const row = db.prepare('SELECT * FROM parent_thresholds WHERE parent_id = ?').get(parentId) as ParentThresholdRow | undefined;
 
         res.json({
             days_per_week: row?.days_per_week ?? 5,
@@ -392,9 +402,9 @@ router.get('/thresholds', requireRole(['parent']), (req: any, res) => {
 });
 
 // PUT parent thresholds
-router.put('/thresholds', requireRole(['parent']), (req: any, res) => {
+router.put('/thresholds', requireRole(['parent']), (req: AuthRequest, res: Response) => {
     try {
-        const parentId = req.user.userId;
+        const parentId = req.user!.userId;
         const { days_per_week, minutes_per_day } = req.body;
 
         const daysVal = Math.max(1, Math.min(7, Number(days_per_week) || 5));
