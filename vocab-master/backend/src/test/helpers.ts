@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { getTestDb } from './setup'
+export { getTestDb } from './setup'
 import type { JWTPayload } from '../types'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-for-testing-only-not-production'

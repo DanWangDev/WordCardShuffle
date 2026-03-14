@@ -90,6 +90,7 @@ describe('TrendChart', () => {
   it('renders empty state when data is null-ish', () => {
     render(
       <TrendChart
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data={null as unknown as any[]}
         dataKey="accuracy"
         xAxisKey="completed_at"
@@ -135,6 +136,28 @@ describe('TrendChart', () => {
 
     const chart = screen.getByTestId('line-chart')
     expect(chart).toHaveAttribute('data-count', '3')
+  })
+
+  it('handles SQLite space-separated datetime format', () => {
+    const sqliteData = [
+      { start_time: '2025-06-10 08:00:00', words_reviewed: 10 },
+      { start_time: '2025-06-10 14:00:00', words_reviewed: 15 },
+      { start_time: '2025-06-11 10:00:00', words_reviewed: 20 },
+    ]
+
+    render(
+      <TrendChart
+        data={sqliteData}
+        dataKey="words_reviewed"
+        xAxisKey="start_time"
+        name="Words"
+        aggregateByDay={true}
+        chartType="bar"
+      />
+    )
+
+    const chart = screen.getByTestId('bar-chart')
+    expect(chart).toHaveAttribute('data-count', '2')
   })
 
   it('uses custom color prop', () => {
