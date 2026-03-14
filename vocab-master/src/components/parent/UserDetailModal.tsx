@@ -34,10 +34,14 @@ export function UserDetailModal({ user, onClose }: UserDetailModalProps) {
 
     const hasQuizData = details && details.quizHistory.length > 0;
     const avgAccuracy = hasQuizData
-        ? Math.round(
-            details.quizHistory.reduce((acc, curr) => acc + (curr.accuracy || 0), 0) /
-            details.quizHistory.length
-        )
+        ? (() => {
+            const withAccuracy = details.quizHistory.filter(q => q.accuracy != null);
+            if (withAccuracy.length === 0) return null;
+            return Math.round(
+                withAccuracy.reduce((acc, curr) => acc + curr.accuracy, 0) /
+                withAccuracy.length
+            );
+        })()
         : null;
 
     return (

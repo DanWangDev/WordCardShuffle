@@ -106,8 +106,8 @@ describe('UserDetailModal', () => {
     expect(screen.getByText('parent:daysActive')).toBeInTheDocument()
     expect(screen.getByText('parent:quizzes')).toBeInTheDocument()
 
-    // Stats cards
-    expect(screen.getByText('2')).toBeInTheDocument() // total quizzes
+    // Stats cards - use getAllByText since '2' appears in multiple places
+    expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1) // total quizzes
     expect(screen.getByText('85%')).toBeInTheDocument() // avg accuracy
 
     // Weak words table

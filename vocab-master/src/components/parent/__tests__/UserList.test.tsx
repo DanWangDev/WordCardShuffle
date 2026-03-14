@@ -197,8 +197,8 @@ describe('UserList', () => {
       <UserList users={users} onSelectUser={vi.fn()} />
     )
 
-    // The streak days text comes from t('days', { count: 5 })
-    expect(screen.getByText(/parent:days/)).toBeInTheDocument()
+    // The streak days text comes from t('days', { count: 5 }) - multiple 'days' matches possible
+    expect(screen.getAllByText(/parent:days/).length).toBeGreaterThanOrEqual(1)
   })
 
   it('shows dash for zero streak', () => {

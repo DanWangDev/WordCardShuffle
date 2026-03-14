@@ -12,11 +12,29 @@ interface TrendChartProps {
     chartType?: 'line' | 'bar';
 }
 
-function formatDateLabel(dateStr: string): string {
-    const date = new Date(dateStr);
+function parseDateStr(dateStr: string): Date {
+    const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+    return new Date(normalized);
+}
+
+function toLocalDateKey(dateStr: string): string {
+    const date = parseDateStr(dateStr);
     if (isNaN(date.getTime())) return dateStr;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function formatDateLabel(dateStr: string): string {
+    const date = parseDateStr(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+
     const today = new Date();
-    const diffDays = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(date);
+    target.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 7) {
         return date.toLocaleDateString('en-US', { weekday: 'short' });
@@ -31,8 +49,7 @@ function aggregateByDayFn(data: any[], xAxisKey: string, dataKey: string): any[]
         const dateStr = item[xAxisKey];
         if (!dateStr) return;
 
-        const date = new Date(dateStr);
-        const dayKey = date.toISOString().split('T')[0];
+        const dayKey = toLocalDateKey(dateStr);
 
         dayMap.set(dayKey, (dayMap.get(dayKey) || 0) + (item[dataKey] || 0));
     });
@@ -61,11 +78,10 @@ export function TrendChart({
             return aggregateByDayFn(data, xAxisKey, dataKey);
         }
 
-        // Non-aggregated: assign unique _xKey so Recharts doesn't merge same-day points
         return data.map((item, i) => ({
             ...item,
             _xKey: `${i}`,
-            _label: formatDateLabel(item[xAxisKey]),
+            _label: formatDateLabel(item[xAxisKey] ?? ''),
         }));
     }, [data, xAxisKey, dataKey, shouldAggregate]);
 
