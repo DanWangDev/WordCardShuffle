@@ -60,6 +60,9 @@ const TABLES_TO_TRUNCATE = [
   'audit_log',
   'user_achievements',
   'leaderboard_entries',
+  'group_wordlists',
+  'group_members',
+  'groups',
   'user_settings',
   'user_stats',
   'users'

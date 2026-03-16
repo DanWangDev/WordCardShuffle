@@ -12,7 +12,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase, db } from './config/database.js';
-import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes } from './routes/index.js';
+import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes, groupsRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
@@ -161,6 +161,7 @@ app.use('/api/wordlists', wordlistsRoutes);
 app.use('/api/push-tokens', pushTokensRoutes);
 app.use('/api/achievements', achievementsRoutes);
 app.use('/api/leaderboards', leaderboardsRoutes);
+app.use('/api/groups', groupsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

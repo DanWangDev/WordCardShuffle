@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3 } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -166,6 +166,13 @@ export function Dashboard() {
                 color="study"
                 onClick={() => navigate('/wordlists/manage')}
               />
+              <ModeCard
+                title={t('groups')}
+                description={t('groupsDesc')}
+                icon={Users}
+                color="groups"
+                onClick={() => navigate('/groups')}
+              />
             </>
           ) : (
             // Student Content
@@ -230,6 +237,15 @@ export function Dashboard() {
                 icon={BarChart3}
                 color="leaderboard"
                 onClick={() => navigate('/leaderboard')}
+              />
+
+              {/* Groups */}
+              <ModeCard
+                title={t('groups')}
+                description={t('groupsDesc')}
+                icon={Users}
+                color="groups"
+                onClick={() => navigate('/groups')}
               />
             </>
           )}

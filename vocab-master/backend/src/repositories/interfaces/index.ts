@@ -9,3 +9,4 @@ export type { IPushTokenRepository } from './IPushTokenRepository.js';
 export type { IQuizResultRepository } from './IQuizResultRepository.js';
 export type { IAchievementRepository, UserAchievementWithDetails } from './IAchievementRepository.js';
 export type { ILeaderboardRepository } from './ILeaderboardRepository.js';
+export type { IGroupRepository } from './IGroupRepository.js';

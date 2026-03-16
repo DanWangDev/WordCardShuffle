@@ -23,5 +23,7 @@
   "achievements": "成就",
   "achievementsDesc": "追踪你的进度",
   "leaderboard": "排行榜",
-  "leaderboardDesc": "看看谁最厉害"
+  "leaderboardDesc": "看看谁最厉害",
+  "groups": "小组",
+  "groupsDesc": "班级和学习小组"
 }
