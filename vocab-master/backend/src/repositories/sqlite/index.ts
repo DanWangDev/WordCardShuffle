@@ -7,3 +7,6 @@ export { SqliteLinkRequestRepository } from './SqliteLinkRequestRepository.js';
 export { SqliteWordlistRepository } from './SqliteWordlistRepository.js';
 export { SqlitePushTokenRepository } from './SqlitePushTokenRepository.js';
 export { SqliteQuizResultRepository } from './SqliteQuizResultRepository.js';
+export { SqliteAchievementRepository } from './SqliteAchievementRepository.js';
+export { SqliteLeaderboardRepository } from './SqliteLeaderboardRepository.js';
+export { SqliteGroupRepository } from './SqliteGroupRepository.js';

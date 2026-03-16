@@ -383,6 +383,42 @@ export interface LeaderboardEntryWithUser extends LeaderboardEntryRow {
   display_name: string | null;
 }
 
+// Group types
+export interface GroupRow {
+  id: number;
+  name: string;
+  description: string;
+  created_by: number;
+  join_code: string;
+  max_members: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GroupMemberRow {
+  id: number;
+  group_id: number;
+  user_id: number;
+  role: 'owner' | 'admin' | 'member';
+  joined_at: string;
+}
+
+export interface GroupWordlistRow {
+  id: number;
+  group_id: number;
+  wordlist_id: number;
+  assigned_at: string;
+}
+
+export interface GroupWithMemberCount extends GroupRow {
+  member_count: number;
+}
+
+export interface GroupMemberWithUser extends GroupMemberRow {
+  username: string;
+  display_name: string | null;
+}
+
 // Quiz result parameter types
 export interface CreateQuizResultParams {
   userId: number;

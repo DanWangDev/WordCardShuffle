@@ -23,5 +23,7 @@
   "achievements": "Achievements",
   "achievementsDesc": "Track your progress",
   "leaderboard": "Leaderboard",
-  "leaderboardDesc": "See who's on top"
+  "leaderboardDesc": "See who's on top",
+  "groups": "Groups",
+  "groupsDesc": "Classes & study groups"
 }

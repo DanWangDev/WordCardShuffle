@@ -15,6 +15,7 @@ import linkingEn from './locales/en/linking.json'
 import wordlistsEn from './locales/en/wordlists.json'
 import achievementsEn from './locales/en/achievements.json'
 import leaderboardEn from './locales/en/leaderboard.json'
+import groupsEn from './locales/en/groups.json'
 
 import commonZh from './locales/zh-CN/common.json'
 import authZh from './locales/zh-CN/auth.json'
@@ -29,6 +30,7 @@ import linkingZh from './locales/zh-CN/linking.json'
 import wordlistsZh from './locales/zh-CN/wordlists.json'
 import achievementsZh from './locales/zh-CN/achievements.json'
 import leaderboardZh from './locales/zh-CN/leaderboard.json'
+import groupsZh from './locales/zh-CN/groups.json'
 
 i18n
   .use(LanguageDetector)
@@ -49,6 +51,7 @@ i18n
         wordlists: wordlistsEn,
         achievements: achievementsEn,
         leaderboard: leaderboardEn,
+        groups: groupsEn,
       },
       'zh-CN': {
         common: commonZh,
@@ -64,6 +67,7 @@ i18n
         wordlists: wordlistsZh,
         achievements: achievementsZh,
         leaderboard: leaderboardZh,
+        groups: groupsZh,
       },
     },
     fallbackLng: 'en',
@@ -82,6 +86,7 @@ i18n
       'wordlists',
       'achievements',
       'leaderboard',
+      'groups',
     ],
     interpolation: {
       escapeValue: false,

@@ -12,3 +12,4 @@ export { default as wordlistsRoutes } from './wordlists';
 export { default as pushTokensRoutes } from './pushTokens';
 export { default as achievementsRoutes } from './achievements';
 export { default as leaderboardsRoutes } from './leaderboards';
+export { default as groupsRoutes } from './groups';

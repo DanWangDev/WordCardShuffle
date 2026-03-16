@@ -14,6 +14,8 @@ import { addAuditLog } from './013_add_audit_log';
 import { addParentThresholds } from './014_add_parent_thresholds';
 import { addAchievements } from './015_add_achievements';
 import { addLeaderboards } from './016_add_leaderboards';
+import { addGroups } from './017_add_groups';
+import { addGroupWordlists } from './018_add_group_wordlists';
 
 export const migrations = [
     initialSchema,
@@ -32,4 +34,6 @@ export const migrations = [
     addParentThresholds,
     addAchievements,
     addLeaderboards,
+    addGroups,
+    addGroupWordlists,
 ];

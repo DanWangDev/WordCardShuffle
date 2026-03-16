@@ -20,6 +20,9 @@ const AdminPanel = lazy(() => import('../components/admin/AdminPanel').then(m =>
 const WordlistManager = lazy(() => import('../components/wordlists/WordlistManager').then(m => ({ default: m.WordlistManager })));
 const AchievementList = lazy(() => import('../components/achievements/AchievementList').then(m => ({ default: m.AchievementList })));
 const LeaderboardPage = lazy(() => import('../components/leaderboard/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
+const GroupList = lazy(() => import('../components/groups/GroupList').then(m => ({ default: m.GroupList })));
+const GroupDetailPage = lazy(() => import('../components/groups/GroupDetail').then(m => ({ default: m.GroupDetail })));
+const CreateGroupPage = lazy(() => import('../components/groups/CreateGroupPage').then(m => ({ default: m.CreateGroupPage })));
 
 // Loading fallback component
 function PageLoader() {
@@ -179,6 +182,14 @@ export const router = createBrowserRouter([
                 index: true,
                 element: withSuspense(AdminPanel),
               },
+            ],
+          },
+          {
+            path: 'groups',
+            children: [
+              { index: true, element: withSuspense(GroupList) },
+              { path: 'create', element: withSuspense(CreateGroupPage) },
+              { path: ':id', element: withSuspense(GroupDetailPage) },
             ],
           },
           {

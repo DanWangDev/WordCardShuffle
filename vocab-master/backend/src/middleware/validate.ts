@@ -275,6 +275,34 @@ export const studySessionSchema = z.object({
   words: z.array(z.string()).optional(),
 });
 
+// Group schemas
+export const createGroupSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters'),
+  description: z.string().max(500, 'Description must be at most 500 characters').optional().default(''),
+  maxMembers: z.number().int().min(2).max(200).optional().default(50),
+});
+
+export const updateGroupSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional(),
+}).refine(data => data.name !== undefined || data.description !== undefined, {
+  message: 'At least one field must be provided'
+});
+
+export const joinGroupSchema = z.object({
+  joinCode: z.string().length(6, 'Join code must be 6 characters'),
+});
+
+export const assignWordlistSchema = z.object({
+  wordlistId: z.number().int().positive('Wordlist ID is required'),
+});
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['admin', 'member'], {
+    errorMap: () => ({ message: 'Role must be "admin" or "member"' })
+  }),
+});
+
 // Push token
 export const pushTokenSchema = z.object({
   expoPushToken: z.string().min(1, 'expoPushToken is required'),

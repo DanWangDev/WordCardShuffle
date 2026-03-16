@@ -10,7 +10,7 @@ Vocab Master is running on a NAS via Docker, used by ~15 users (family + friends
 |-------|------|------|------------|--------|-------------|
 | 1 | Infrastructure Foundation | L | - | DONE | Repo abstraction, pagination, cache, job queue, API split |
 | 2 | Gamification & Social | L | P1 | DONE | Achievements, leaderboards, enhanced streaks |
-| 3 | Multi-Class/Group Mgmt | L | P1 | Planned | Classes, group wordlists, group stats |
+| 3 | Multi-Class/Group Mgmt | L | P1 | DONE | Classes, group wordlists, group stats |
 | 4 | Analytics & Reports | M | P1, P2 | Planned | Word mastery, CSV/PDF export, email digests |
 | 5 | Richer Learning Modes | L | P4 | Planned | SRS, flashcards, audio, sentence building |
 | 6 | PvP Challenges & Polish | M | P2, P3 | Planned | Head-to-head quizzes, code splitting, offline |
@@ -132,30 +132,43 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 ---
 
-## Phase 3: Multi-Class/Group Management
+## Phase 3: Multi-Class/Group Management (DONE)
 
-### Database Schema (Migrations 017-018)
+**Branch:** `feature/phase3-group-management`
+**Tests:** 291 backend + 224 frontend = 515 total
+
+### Database Schema (Migrations 017-018) (DONE)
 
 **017_add_groups.ts:**
 - `groups` table: id, name, description, created_by, join_code (6-char unique), max_members, timestamps
-- `group_members` table: group_id, user_id, role (owner/admin/member), joined_at
+- `group_members` table: group_id, user_id, role (owner/admin/member), joined_at (unique per group+user)
+- Indexes on created_by, join_code, user_id, group_id
 
 **018_add_group_wordlists.ts:**
-- `group_wordlists` table: group_id, wordlist_id, assigned_at
+- `group_wordlists` table: group_id, wordlist_id, assigned_at (unique per group+wordlist)
+- Indexes on group_id, wordlist_id
 
-### Backend
+### Backend (DONE)
 
-- New: `groupRepository.ts`, `groupService.ts`, `routes/groups.ts`
-- Endpoints: CRUD groups, manage members, assign/unassign wordlists, group stats, group leaderboard, join-by-code
-- Validation schemas: `createGroupSchema`, `addGroupMemberSchema`, `joinGroupSchema`
-- Authorization: owners/admins manage; members view; parents see groups they created; students see groups they belong to
-- Modify `wordlistRepository.findAll()` to include wordlists assigned to user's groups
+- **Repository:** `IGroupRepository` + `SqliteGroupRepository` — CRUD groups, member management, wordlist assignment, `findGroupWordlistIds()` for cross-group wordlist discovery
+- **Service:** `groupService.ts` — create/update/delete groups, join by code (6-char hex), member management with role-based authorization (owner > admin > member), wordlist assignment
+- **Routes:** `routes/groups.ts` — 9 endpoints: GET /, POST /, GET /:id, PATCH /:id, DELETE /:id, POST /join, DELETE /:id/members/:userId, PATCH /:id/members/:userId/role, POST /:id/wordlists, DELETE /:id/wordlists/:wordlistId
+- **Validation schemas:** `createGroupSchema`, `updateGroupSchema`, `joinGroupSchema`, `assignWordlistSchema`, `updateMemberRoleSchema`
+- **Authorization:** owners/admins manage; members view; parents see groups they created; students see groups they belong to; system admins bypass all checks
 
-### Frontend
+### Frontend (DONE)
 
-- New components: `groups/GroupList.tsx`, `GroupDetail.tsx`, `GroupMemberList.tsx`, `GroupStats.tsx`, `CreateGroupModal.tsx`, `JoinGroupModal.tsx`, `AssignWordlistModal.tsx`
-- "Classes" section in parent dashboard; students see groups in navigation
-- New: `groupApi.ts`
+- **Group components:** `GroupList.tsx` (list view with join modal), `GroupDetail.tsx` (members, wordlists, join code copy, danger zone), `CreateGroupPage.tsx` (form with name/description)
+- **Dashboard:** Groups card (cyan/teal gradient) for both students and parents
+- **API module:** `groupApi.ts` with 9 methods matching all backend endpoints
+- **Routes:** lazy-loaded `/groups`, `/groups/create`, `/groups/:id` accessible to all authenticated roles
+- **i18n:** English + Chinese translations for `groups` namespace, plus dashboard keys
+
+### Deferred Items
+
+- Group stats aggregation (per-member quiz/study stats within group) — deferred to Phase 4
+- Group leaderboard (leaderboard filtered by group members) — can be added to Phase 6
+- `wordlistRepository.findAll()` modification to include group-assigned wordlists — repository has `findGroupWordlistIds()` ready for integration
 
 ---
 
