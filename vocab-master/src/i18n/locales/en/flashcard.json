@@ -1,0 +1,20 @@
+{
+  "title": "Flashcard Review",
+  "swipeLeftHint": "Swipe left: Don't know",
+  "swipeRightHint": "Swipe right: Know it",
+  "tapToFlip": "Tap to flip",
+  "cardsRemaining": "{{count}} cards remaining",
+  "sessionComplete": "Session Complete!",
+  "reviewed": "Cards Reviewed",
+  "correct": "Correct",
+  "incorrect": "Needs Review",
+  "reviewAgain": "Review Again",
+  "backToDashboard": "Back to Dashboard",
+  "noCardsToReview": "No Cards to Review",
+  "noCardsMessage": "You're all caught up! Come back later for more reviews.",
+  "know": "Know it",
+  "dontKnow": "Don't know",
+  "definition": "Definition",
+  "synonyms": "Synonyms",
+  "example": "Example"
+}

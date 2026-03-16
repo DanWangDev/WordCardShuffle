@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -246,6 +246,24 @@ export function Dashboard() {
                 icon={Users}
                 color="groups"
                 onClick={() => navigate('/groups')}
+              />
+
+              {/* Flashcard Review */}
+              <ModeCard
+                title={t('flashcards')}
+                description={t('flashcardsDesc')}
+                icon={Layers}
+                color="flashcard"
+                onClick={() => navigate('/flashcards')}
+              />
+
+              {/* Sentence Building */}
+              <ModeCard
+                title={t('sentenceBuild')}
+                description={t('sentenceBuildDesc')}
+                icon={PenTool}
+                color="exercises"
+                onClick={() => navigate('/exercises/sentence-build')}
               />
 
               {/* My Progress / Reports */}

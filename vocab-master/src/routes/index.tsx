@@ -24,6 +24,8 @@ const GroupList = lazy(() => import('../components/groups/GroupList').then(m => 
 const GroupDetailPage = lazy(() => import('../components/groups/GroupDetail').then(m => ({ default: m.GroupDetail })));
 const CreateGroupPage = lazy(() => import('../components/groups/CreateGroupPage').then(m => ({ default: m.CreateGroupPage })));
 const ReportsPage = lazy(() => import('../components/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
+const FlashcardSession = lazy(() => import('../components/flashcard/FlashcardSession').then(m => ({ default: m.FlashcardSession })));
+const SentenceBuildSession = lazy(() => import('../components/exercises/SentenceBuildSession').then(m => ({ default: m.SentenceBuildSession })));
 
 // Loading fallback component — not exported, used internally for Suspense
 // eslint-disable-next-line react-refresh/only-export-components
@@ -169,6 +171,14 @@ export const router = createBrowserRouter([
               {
                 path: 'reports',
                 element: withSuspense(ReportsPage),
+              },
+              {
+                path: 'flashcards',
+                element: withSuspense(FlashcardSession),
+              },
+              {
+                path: 'exercises/sentence-build',
+                element: withSuspense(SentenceBuildSession),
               },
             ],
           },

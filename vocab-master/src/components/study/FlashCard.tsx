@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { VocabularyWord } from '../../types';
 import { getRandomElement } from '../../utils';
+import { PronunciationButton } from '../common/PronunciationButton';
 
 interface FlashCardProps {
   word: VocabularyWord;
@@ -65,9 +66,12 @@ export function FlashCard({ word, isFlipped, onFlip }: FlashCardProps) {
           `}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-gray-900 text-center px-4">
-            {word.targetWord}
-          </h2>
+          <div className="flex items-center justify-center gap-3">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-gray-900 text-center">
+              {word.targetWord}
+            </h2>
+            <PronunciationButton word={word.targetWord} />
+          </div>
           <p className="mt-6 lg:mt-8 text-sm md:text-base lg:text-lg text-gray-400">
             {t('clickToFlip')}
           </p>

@@ -5,7 +5,7 @@ interface ModeCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  color: 'study' | 'quiz' | 'challenge' | 'achievement' | 'leaderboard' | 'groups' | 'reports';
+  color: 'study' | 'quiz' | 'challenge' | 'achievement' | 'leaderboard' | 'groups' | 'reports' | 'flashcard' | 'exercises';
   onClick: () => void;
   badge?: string;
 }
@@ -59,6 +59,20 @@ const colorStyles = {
     border: 'border-white/20',
     shadow: 'shadow-[rgba(99,102,241,0.3)_0px_8px_24px]',
     hoverShadow: 'hover:shadow-[rgba(99,102,241,0.4)_0px_12px_28px]',
+  },
+  flashcard: {
+    bg: 'bg-gradient-to-br from-fuchsia-500 to-pink-600',
+    iconBg: 'bg-white/20',
+    border: 'border-white/20',
+    shadow: 'shadow-[rgba(217,70,239,0.3)_0px_8px_24px]',
+    hoverShadow: 'hover:shadow-[rgba(217,70,239,0.4)_0px_12px_28px]',
+  },
+  exercises: {
+    bg: 'bg-gradient-to-br from-lime-500 to-green-600',
+    iconBg: 'bg-white/20',
+    border: 'border-white/20',
+    shadow: 'shadow-[rgba(132,204,22,0.3)_0px_8px_24px]',
+    hoverShadow: 'hover:shadow-[rgba(132,204,22,0.4)_0px_12px_28px]',
   },
 };
 

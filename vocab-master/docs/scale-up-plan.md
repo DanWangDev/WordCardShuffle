@@ -12,7 +12,7 @@ Vocab Master is running on a NAS via Docker, used by ~15 users (family + friends
 | 2 | Gamification & Social | L | P1 | DONE | Achievements, leaderboards, enhanced streaks |
 | 3 | Multi-Class/Group Mgmt | L | P1 | DONE | Classes, group wordlists, group stats |
 | 4 | Analytics & Reports | M | P1, P2 | DONE | Word mastery, CSV export, learning trends |
-| 5 | Richer Learning Modes | L | P4 | Planned | SRS, flashcards, audio, sentence building |
+| 5 | Richer Learning Modes | L | P4 | DONE | SRS, flashcards, audio, sentence building |
 | 6 | PvP Challenges & Polish | M | P2, P3 | Planned | Head-to-head quizzes, code splitting, offline |
 
 Phases 2 and 3 can run in parallel after Phase 1. Phase 4 can start after Phase 2. Each phase is independently deployable.
@@ -229,34 +229,63 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 ---
 
-## Phase 5: Richer Learning Modes
+## Phase 5: Richer Learning Modes (DONE)
 
-### Backend
+**Branch:** `feature/phase5-learning-modes`
+**Tests:** 300 backend + 224 frontend = 524 total
+**Database:** No new migration — uses existing `word_mastery` SRS columns from Phase 4
 
-- New: `srsService.ts` — SM-2 algorithm variant (correct: interval *= ease_factor; incorrect: reset to 1 day)
-- New: `routes/exercises.ts`, `exerciseService.ts`
-- Endpoints: GET /srs/review-queue?limit=20, POST /srs/review, GET /exercises/sentence-build?wordlistId=X
-- Uses `word_mastery` table from Phase 4
+### Backend (DONE)
 
-### Frontend
+**Files created:**
+- `backend/src/services/srsService.ts` — SM-2 algorithm variant with quality 0-5 scale, interval scheduling, ease factor adjustment
+- `backend/src/services/exerciseService.ts` — Sentence building from existing `example_sentences` data
+- `backend/src/routes/srs.ts` — 3 endpoints: GET /review-queue, POST /review, GET /count
+- `backend/src/routes/exercises.ts` — 1 endpoint: GET /sentence-build
 
-**Flashcard mode (swipe-based):**
-- `flashcard/FlashcardSession.tsx`, `FlashcardCard.tsx` (Framer Motion gesture), `FlashcardProgress.tsx`
-- Pulls from SRS review queue; falls back to active wordlist for new users
+**Files modified:**
+- `backend/src/repositories/interfaces/IWordMasteryRepository.ts` — Added `getReviewQueue`, `getReviewQueueCount`, `updateSrsSchedule`, `findByUserAndWord`
+- `backend/src/repositories/sqlite/SqliteWordMasteryRepository.ts` — Implemented 4 new methods
+- `backend/src/routes/index.ts` — Added srs and exercises route exports
+- `backend/src/index.ts` — Mounted `/api/srs` and `/api/exercises` routes
 
-**Audio pronunciation:**
-- `hooks/useSpeechSynthesis.ts` — wraps Web Speech API (no backend/storage needed)
-- `common/PronunciationButton.tsx` — add to study card, flashcard, and quiz question components
+**Endpoints:**
+- `GET /api/srs/review-queue?limit=20` — SRS review queue with enriched word data
+- `POST /api/srs/review` — Process review with SM-2 algorithm (body: `{ wordMasteryId, quality }`)
+- `GET /api/srs/count` — Count of due reviews
+- `GET /api/exercises/sentence-build?wordlistId=X&limit=10` — Sentence building exercises
 
-**Sentence building:**
-- `exercises/SentenceBuildSession.tsx`, `SentenceBuildCard.tsx` (drag-and-drop word tokens)
-- Reuses existing `example_sentences` from `wordlist_words` table
+### Frontend (DONE)
 
-**Image-based vocabulary (optional):**
-- Migration 020: add `image_url` column to `wordlist_words`
-- `imageService.ts` — Unsplash/Pixabay free tier fetch + cache
-- `common/WordImage.tsx` — lazy-loaded with fallback
-- Can defer if API key management is undesirable
+**Files created:**
+- `src/hooks/useSpeechSynthesis.ts` — Web Speech API wrapper hook
+- `src/components/common/PronunciationButton.tsx` — Audio pronunciation button
+- `src/components/flashcard/FlashcardCard.tsx` — Swipe-based card with Framer Motion gestures and 3D flip
+- `src/components/flashcard/FlashcardProgress.tsx` — Progress bar with correct/incorrect counters
+- `src/components/flashcard/FlashcardSession.tsx` — Full session controller with SRS queue
+- `src/components/exercises/SentenceBuildCard.tsx` — Tap-to-place token arrangement with answer checking
+- `src/components/exercises/SentenceBuildSession.tsx` — Session controller with wordlist-based exercises
+- `src/services/api/srsApi.ts` — SRS API module
+- `src/services/api/exerciseApi.ts` — Exercise API module
+- `src/i18n/locales/en/flashcard.json` + `zh-CN/flashcard.json` — Flashcard translations
+- `src/i18n/locales/en/exercises.json` + `zh-CN/exercises.json` — Exercise translations
+
+**Files modified:**
+- `src/components/study/FlashCard.tsx` — Added PronunciationButton to word display
+- `src/components/dashboard/Dashboard.tsx` — Added Flashcard Review and Sentence Builder ModeCards
+- `src/components/dashboard/ModeCard.tsx` — Added 'flashcard' (fuchsia) and 'exercises' (lime) color variants
+- `src/routes/index.tsx` — Added lazy-loaded `/flashcards` and `/exercises/sentence-build` routes
+- `src/services/api/index.ts` — Added srsApi and exerciseApi exports
+- `src/hooks/index.ts` — Added useSpeechSynthesis export
+- `src/i18n/index.ts` — Registered flashcard and exercises namespaces
+- `src/i18n/types.ts` — Added flashcard and exercises type declarations
+- Dashboard i18n files — Added flashcards, flashcardsDesc, sentenceBuild, sentenceBuildDesc keys
+
+### Deferred Items
+
+- Image-based vocabulary — deferred (requires API key management for Unsplash/Pixabay)
+- PronunciationButton in QuizMode `QuestionCard` — can add when quiz UI is refreshed
+- SRS fallback to active wordlist for users with no review history — session shows empty state instead
 
 ---
 

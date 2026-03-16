@@ -17,6 +17,8 @@ import achievementsEn from './locales/en/achievements.json'
 import leaderboardEn from './locales/en/leaderboard.json'
 import groupsEn from './locales/en/groups.json'
 import reportsEn from './locales/en/reports.json'
+import flashcardEn from './locales/en/flashcard.json'
+import exercisesEn from './locales/en/exercises.json'
 
 import commonZh from './locales/zh-CN/common.json'
 import authZh from './locales/zh-CN/auth.json'
@@ -33,6 +35,8 @@ import achievementsZh from './locales/zh-CN/achievements.json'
 import leaderboardZh from './locales/zh-CN/leaderboard.json'
 import groupsZh from './locales/zh-CN/groups.json'
 import reportsZh from './locales/zh-CN/reports.json'
+import flashcardZh from './locales/zh-CN/flashcard.json'
+import exercisesZh from './locales/zh-CN/exercises.json'
 
 i18n
   .use(LanguageDetector)
@@ -55,6 +59,8 @@ i18n
         leaderboard: leaderboardEn,
         groups: groupsEn,
         reports: reportsEn,
+        flashcard: flashcardEn,
+        exercises: exercisesEn,
       },
       'zh-CN': {
         common: commonZh,
@@ -72,6 +78,8 @@ i18n
         leaderboard: leaderboardZh,
         groups: groupsZh,
         reports: reportsZh,
+        flashcard: flashcardZh,
+        exercises: exercisesZh,
       },
     },
     fallbackLng: 'en',
@@ -92,6 +100,8 @@ i18n
       'leaderboard',
       'groups',
       'reports',
+      'flashcard',
+      'exercises',
     ],
     interpolation: {
       escapeValue: false,

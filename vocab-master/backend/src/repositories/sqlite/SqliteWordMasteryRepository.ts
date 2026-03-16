@@ -154,6 +154,45 @@ export class SqliteWordMasteryRepository implements IWordMasteryRepository {
     }));
   }
 
+  getReviewQueue(userId: number, limit: number): WordMasteryRow[] {
+    return this.db.prepare(`
+      SELECT * FROM word_mastery
+      WHERE user_id = ?
+        AND (next_review_at IS NULL OR next_review_at <= datetime('now'))
+      ORDER BY
+        CASE WHEN next_review_at IS NULL THEN 0 ELSE 1 END,
+        next_review_at ASC
+      LIMIT ?
+    `).all(userId, limit) as WordMasteryRow[];
+  }
+
+  getReviewQueueCount(userId: number): number {
+    const row = this.db.prepare(`
+      SELECT COUNT(*) as count FROM word_mastery
+      WHERE user_id = ?
+        AND (next_review_at IS NULL OR next_review_at <= datetime('now'))
+    `).get(userId) as { count: number };
+    return row.count;
+  }
+
+  updateSrsSchedule(id: number, data: { nextReviewAt: string; srsIntervalDays: number; srsEaseFactor: number; masteryLevel: number }): void {
+    this.db.prepare(`
+      UPDATE word_mastery SET
+        next_review_at = ?,
+        srs_interval_days = ?,
+        srs_ease_factor = ?,
+        mastery_level = ?,
+        updated_at = datetime('now')
+      WHERE id = ?
+    `).run(data.nextReviewAt, data.srsIntervalDays, data.srsEaseFactor, data.masteryLevel, id);
+  }
+
+  findByUserAndWord(userId: number, word: string): WordMasteryRow | undefined {
+    return this.db.prepare(
+      'SELECT * FROM word_mastery WHERE user_id = ? AND word = ?'
+    ).get(userId, word) as WordMasteryRow | undefined;
+  }
+
   getLearningTrend(userId: number, days = 30): Array<{
     date: string;
     quizzes: number;
