@@ -1,0 +1,14 @@
+{
+  "title": "\u6210\u5c31",
+  "earned": "\u5df2\u83b7\u5f97",
+  "locked": "\u672a\u89e3\u9501",
+  "earnedCount": "\u5df2\u83b7\u5f97 {{earned}} / {{total}}",
+  "unlocked": "\u89e3\u9501\u65b0\u6210\u5c31\uff01",
+  "categories": {
+    "quiz": "\u6d4b\u9a8c",
+    "streak": "\u8fde\u7eed",
+    "words": "\u5355\u8bcd",
+    "challenge": "\u6311\u6218",
+    "special": "\u7279\u6b8a"
+  }
+}

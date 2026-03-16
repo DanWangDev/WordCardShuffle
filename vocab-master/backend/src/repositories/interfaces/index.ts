@@ -7,3 +7,5 @@ export type { ILinkRequestRepository, LinkRequestWithUsers } from './ILinkReques
 export type { IWordlistRepository } from './IWordlistRepository.js';
 export type { IPushTokenRepository } from './IPushTokenRepository.js';
 export type { IQuizResultRepository } from './IQuizResultRepository.js';
+export type { IAchievementRepository, UserAchievementWithDetails } from './IAchievementRepository.js';
+export type { ILeaderboardRepository } from './ILeaderboardRepository.js';

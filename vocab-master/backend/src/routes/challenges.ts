@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { validate, completeChallengeSchema } from '../middleware/validate.js';
 import { challengeRepository } from '../repositories/challengeRepository.js';
+import { checkAndAwardAchievements } from '../services/achievementService.js';
 import type { AuthRequest, DailyChallenge, CompleteChallengeRequest } from '../types/index.js';
 
 const router = Router();
@@ -59,6 +60,12 @@ router.post('/complete', validate(completeChallengeSchema), (req: AuthRequest, r
     // Calculate new streak
     const streak = challengeRepository.calculateStreak(userId);
 
+    // Check achievements after challenge completion
+    const newlyEarned = checkAndAwardAchievements(userId, {
+      challengeScore: score,
+      streakDays: streak,
+    });
+
     res.status(201).json({
       challenge: {
         id: challenge.id,
@@ -67,7 +74,8 @@ router.post('/complete', validate(completeChallengeSchema), (req: AuthRequest, r
         score: challenge.score,
         createdAt: challenge.created_at
       } as DailyChallenge,
-      streak
+      streak,
+      newAchievements: newlyEarned.length > 0 ? newlyEarned : undefined,
     });
   } catch (error) {
     res.status(500).json({

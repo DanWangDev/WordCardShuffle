@@ -11,4 +11,6 @@ export { adminApi } from './adminApi';
 export { notificationApi } from './notificationApi';
 export { linkRequestApi } from './linkRequestApi';
 export { wordlistApi } from './wordlistApi';
+export { achievementApi } from './achievementApi';
+export { leaderboardApi } from './leaderboardApi';
 export * from './types';

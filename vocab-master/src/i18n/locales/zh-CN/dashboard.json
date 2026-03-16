@@ -19,5 +19,9 @@
   "statsQuizzes": "测验",
   "statsAccuracy": "正确率",
   "statsReviewed": "已复习",
-  "statsStreak": "连续天数"
+  "statsStreak": "连续天数",
+  "achievements": "成就",
+  "achievementsDesc": "追踪你的进度",
+  "leaderboard": "排行榜",
+  "leaderboardDesc": "看看谁最厉害"
 }

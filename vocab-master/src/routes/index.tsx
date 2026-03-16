@@ -18,6 +18,8 @@ const DailyChallenge = lazy(() => import('../components/challenge/DailyChallenge
 const ParentDashboard = lazy(() => import('../components/parent/ParentDashboard').then(m => ({ default: m.ParentDashboard })));
 const AdminPanel = lazy(() => import('../components/admin/AdminPanel').then(m => ({ default: m.AdminPanel })));
 const WordlistManager = lazy(() => import('../components/wordlists/WordlistManager').then(m => ({ default: m.WordlistManager })));
+const AchievementList = lazy(() => import('../components/achievements/AchievementList').then(m => ({ default: m.AchievementList })));
+const LeaderboardPage = lazy(() => import('../components/leaderboard/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
 
 // Loading fallback component
 function PageLoader() {
@@ -148,6 +150,14 @@ export const router = createBrowserRouter([
               {
                 path: 'challenge',
                 element: withSuspense(DailyChallenge),
+              },
+              {
+                path: 'achievements',
+                element: withSuspense(AchievementList),
+              },
+              {
+                path: 'leaderboard',
+                element: withSuspense(LeaderboardPage),
               },
             ],
           },

@@ -11,6 +11,8 @@ import type parentEn from './locales/en/parent.json'
 import type notificationsEn from './locales/en/notifications.json'
 import type linkingEn from './locales/en/linking.json'
 import type wordlistsEn from './locales/en/wordlists.json'
+import type achievementsEn from './locales/en/achievements.json'
+import type leaderboardEn from './locales/en/leaderboard.json'
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -27,6 +29,8 @@ declare module 'i18next' {
       notifications: typeof notificationsEn
       linking: typeof linkingEn
       wordlists: typeof wordlistsEn
+      achievements: typeof achievementsEn
+      leaderboard: typeof leaderboardEn
     }
   }
 }

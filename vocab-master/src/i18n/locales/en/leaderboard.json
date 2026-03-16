@@ -1,0 +1,14 @@
+{
+  "title": "Leaderboard",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "alltime": "All Time",
+  "rank": "Rank",
+  "score": "Score",
+  "quizzes": "Quizzes",
+  "words": "Words",
+  "streak": "Streak",
+  "you": "You",
+  "noEntries": "No entries yet. Complete quizzes and challenges to appear here!",
+  "yourRank": "Your Rank: #{{rank}}"
+}
