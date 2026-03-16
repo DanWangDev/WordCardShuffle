@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { quizResultRepository } from '../repositories/quizResultRepository';
 import { authMiddleware } from '../middleware/auth';
 import { logger } from '../services/logger.js';
+import { checkAndAwardAchievements } from '../services/achievementService.js';
 import type { AuthRequest } from '../types';
 
 const router = Router();
@@ -63,12 +64,17 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
             answers
         });
 
-        // Stats are now computed from raw tables; no need to increment cached counters.
+        // Check achievements after quiz completion
+        const newlyEarned = checkAndAwardAchievements(userId, {
+            quizScore: score,
+            quizTimeSeconds: totalTimeSpent,
+        });
 
         res.status(201).json({
             success: true,
             resultId,
-            message: 'Quiz result saved successfully'
+            message: 'Quiz result saved successfully',
+            newAchievements: newlyEarned.length > 0 ? newlyEarned : undefined,
         });
     } catch (error) {
         logger.error('Error saving quiz result', { error: String(error) });

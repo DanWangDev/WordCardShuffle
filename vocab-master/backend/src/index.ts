@@ -12,12 +12,13 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { initializeDatabase, closeDatabase, db } from './config/database.js';
-import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes } from './routes/index.js';
+import { authRoutes, settingsRoutes, statsRoutes, challengesRoutes, migrateRoutes, quizResultsRoutes, studyStatsRoutes, adminRoutes, notificationsRoutes, linkRequestsRoutes, wordlistsRoutes, pushTokensRoutes, achievementsRoutes, leaderboardsRoutes } from './routes/index.js';
 import { authService } from './services/authService.js';
 import { inactivityService } from './services/inactivityService.js';
 import { logger } from './services/logger.js';
 import { AppError } from './errors/AppError.js';
 import { jobQueue } from './jobs/jobQueue.js';
+import { recalculateLeaderboards } from './services/leaderboardService.js';
 
 const app = express();
 app.set('trust proxy', 1); // Trust first main proxy (likely Nginx/Docker)
@@ -34,6 +35,10 @@ jobQueue.register('token-cleanup', () => {
 jobQueue.register('inactivity-check', async () => {
   await inactivityService.checkInactivityAndNotify();
 }, 6 * 60 * 60 * 1000); // Every 6 hours
+
+jobQueue.register('leaderboard-recalc', () => {
+  recalculateLeaderboards();
+}, 15 * 60 * 1000); // Every 15 minutes
 
 // Start all jobs
 jobQueue.startAll();
@@ -154,6 +159,8 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/link-requests', linkRequestsRoutes);
 app.use('/api/wordlists', wordlistsRoutes);
 app.use('/api/push-tokens', pushTokensRoutes);
+app.use('/api/achievements', achievementsRoutes);
+app.use('/api/leaderboards', leaderboardsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

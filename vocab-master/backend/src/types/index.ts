@@ -347,6 +347,42 @@ export interface PushTokenRow {
   created_at: string;
 }
 
+// Achievement types
+export interface AchievementRow {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'quiz' | 'streak' | 'words' | 'challenge' | 'special';
+  threshold: number;
+  sort_order: number;
+}
+
+export interface UserAchievementRow {
+  id: number;
+  user_id: number;
+  achievement_id: number;
+  earned_at: string;
+}
+
+export interface LeaderboardEntryRow {
+  id: number;
+  user_id: number;
+  period: 'weekly' | 'monthly' | 'alltime';
+  period_key: string;
+  score: number;
+  quizzes_completed: number;
+  words_mastered: number;
+  streak_days: number;
+  updated_at: string;
+}
+
+export interface LeaderboardEntryWithUser extends LeaderboardEntryRow {
+  username: string;
+  display_name: string | null;
+}
+
 // Quiz result parameter types
 export interface CreateQuizResultParams {
   userId: number;

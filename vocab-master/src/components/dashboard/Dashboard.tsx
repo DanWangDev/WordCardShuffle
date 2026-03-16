@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3 } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { UserMenu } from '../common/UserMenu';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -212,6 +212,24 @@ export function Dashboard() {
                 color="challenge"
                 onClick={() => handleModeSelect('challenge')}
                 badge={hasTodayChallenge ? t('badgeDone') : t('badgeNew')}
+              />
+
+              {/* Achievements */}
+              <ModeCard
+                title={t('achievements')}
+                description={t('achievementsDesc')}
+                icon={Award}
+                color="achievement"
+                onClick={() => navigate('/achievements')}
+              />
+
+              {/* Leaderboard */}
+              <ModeCard
+                title={t('leaderboard')}
+                description={t('leaderboardDesc')}
+                icon={BarChart3}
+                color="leaderboard"
+                onClick={() => navigate('/leaderboard')}
               />
             </>
           )}

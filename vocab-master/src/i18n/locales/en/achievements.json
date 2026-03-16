@@ -1,0 +1,14 @@
+{
+  "title": "Achievements",
+  "earned": "Earned",
+  "locked": "Locked",
+  "earnedCount": "{{earned}} of {{total}} earned",
+  "unlocked": "Achievement Unlocked!",
+  "categories": {
+    "quiz": "Quiz",
+    "streak": "Streak",
+    "words": "Words",
+    "challenge": "Challenge",
+    "special": "Special"
+  }
+}

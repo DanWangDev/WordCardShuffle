@@ -13,6 +13,8 @@ import parentEn from './locales/en/parent.json'
 import notificationsEn from './locales/en/notifications.json'
 import linkingEn from './locales/en/linking.json'
 import wordlistsEn from './locales/en/wordlists.json'
+import achievementsEn from './locales/en/achievements.json'
+import leaderboardEn from './locales/en/leaderboard.json'
 
 import commonZh from './locales/zh-CN/common.json'
 import authZh from './locales/zh-CN/auth.json'
@@ -25,6 +27,8 @@ import parentZh from './locales/zh-CN/parent.json'
 import notificationsZh from './locales/zh-CN/notifications.json'
 import linkingZh from './locales/zh-CN/linking.json'
 import wordlistsZh from './locales/zh-CN/wordlists.json'
+import achievementsZh from './locales/zh-CN/achievements.json'
+import leaderboardZh from './locales/zh-CN/leaderboard.json'
 
 i18n
   .use(LanguageDetector)
@@ -43,6 +47,8 @@ i18n
         notifications: notificationsEn,
         linking: linkingEn,
         wordlists: wordlistsEn,
+        achievements: achievementsEn,
+        leaderboard: leaderboardEn,
       },
       'zh-CN': {
         common: commonZh,
@@ -56,6 +62,8 @@ i18n
         notifications: notificationsZh,
         linking: linkingZh,
         wordlists: wordlistsZh,
+        achievements: achievementsZh,
+        leaderboard: leaderboardZh,
       },
     },
     fallbackLng: 'en',
@@ -72,6 +80,8 @@ i18n
       'notifications',
       'linking',
       'wordlists',
+      'achievements',
+      'leaderboard',
     ],
     interpolation: {
       escapeValue: false,

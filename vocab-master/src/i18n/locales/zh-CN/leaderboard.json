@@ -1,0 +1,14 @@
+{
+  "title": "\u6392\u884c\u699c",
+  "weekly": "\u672c\u5468",
+  "monthly": "\u672c\u6708",
+  "alltime": "\u603b\u699c",
+  "rank": "\u6392\u540d",
+  "score": "\u5206\u6570",
+  "quizzes": "\u6d4b\u9a8c",
+  "words": "\u5355\u8bcd",
+  "streak": "\u8fde\u7eed",
+  "you": "\u4f60",
+  "noEntries": "\u8fd8\u6ca1\u6709\u8bb0\u5f55\u3002\u5b8c\u6210\u6d4b\u9a8c\u548c\u6311\u6218\u5373\u53ef\u4e0a\u699c\uff01",
+  "yourRank": "\u4f60\u7684\u6392\u540d\uff1a\u7b2c{{rank}}\u540d"
+}

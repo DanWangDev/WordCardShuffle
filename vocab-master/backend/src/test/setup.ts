@@ -58,6 +58,8 @@ const TABLES_TO_TRUNCATE = [
   'notifications',
   'link_requests',
   'audit_log',
+  'user_achievements',
+  'leaderboard_entries',
   'user_settings',
   'user_stats',
   'users'

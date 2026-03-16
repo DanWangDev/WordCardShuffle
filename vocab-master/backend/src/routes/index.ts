@@ -10,3 +10,5 @@ export { default as notificationsRoutes } from './notifications';
 export { default as linkRequestsRoutes } from './linkRequests';
 export { default as wordlistsRoutes } from './wordlists';
 export { default as pushTokensRoutes } from './pushTokens';
+export { default as achievementsRoutes } from './achievements';
+export { default as leaderboardsRoutes } from './leaderboards';

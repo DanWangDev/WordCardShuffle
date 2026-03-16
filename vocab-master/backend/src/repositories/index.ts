@@ -12,6 +12,8 @@ import { SqliteLinkRequestRepository } from './sqlite/SqliteLinkRequestRepositor
 import { SqliteWordlistRepository } from './sqlite/SqliteWordlistRepository.js';
 import { SqlitePushTokenRepository } from './sqlite/SqlitePushTokenRepository.js';
 import { SqliteQuizResultRepository } from './sqlite/SqliteQuizResultRepository.js';
+import { SqliteAchievementRepository } from './sqlite/SqliteAchievementRepository.js';
+import { SqliteLeaderboardRepository } from './sqlite/SqliteLeaderboardRepository.js';
 
 import type {
   IUserRepository,
@@ -25,6 +27,8 @@ import type {
   IWordlistRepository,
   IPushTokenRepository,
   IQuizResultRepository,
+  IAchievementRepository,
+  ILeaderboardRepository,
 } from './interfaces/index.js';
 
 // Create notification repo first since linkRequest depends on it
@@ -42,3 +46,5 @@ export const linkRequestRepository: ILinkRequestRepository = new SqliteLinkReque
 export const wordlistRepository: IWordlistRepository = new SqliteWordlistRepository(db);
 export const pushTokenRepository: IPushTokenRepository = new SqlitePushTokenRepository(db);
 export const quizResultRepository: IQuizResultRepository = new SqliteQuizResultRepository(db, userRepo);
+export const achievementRepository: IAchievementRepository = new SqliteAchievementRepository(db);
+export const leaderboardRepository: ILeaderboardRepository = new SqliteLeaderboardRepository(db);

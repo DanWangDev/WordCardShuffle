@@ -19,5 +19,9 @@
   "statsQuizzes": "Quizzes",
   "statsAccuracy": "Accuracy",
   "statsReviewed": "Reviewed",
-  "statsStreak": "Streak"
+  "statsStreak": "Streak",
+  "achievements": "Achievements",
+  "achievementsDesc": "Track your progress",
+  "leaderboard": "Leaderboard",
+  "leaderboardDesc": "See who's on top"
 }
