@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: .
+      context: ./packages/frontend
       dockerfile: frontend.Dockerfile
       args:
         - VITE_API_URL=/api
@@ -18,7 +18,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./packages/backend
       dockerfile: Dockerfile
     container_name: vocab-master-backend
     ports:

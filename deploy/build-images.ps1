@@ -1,5 +1,5 @@
 # Build and export Docker images for NAS deployment
-# Run this script from the vocab-master directory
+# Run this script from the repo root directory
 
 $ErrorActionPreference = "Stop"
 
@@ -7,13 +7,13 @@ Write-Host "Building Docker images for NAS deployment..." -ForegroundColor Cyan
 
 # Build backend image
 Write-Host "`nBuilding backend image..." -ForegroundColor Yellow
-docker build -t vocab-master-backend:latest ./backend
+docker build -t vocab-master-backend:latest ./packages/backend
 
 # Build frontend image with NAS API URL
 Write-Host "`nBuilding frontend image..." -ForegroundColor Yellow
 docker build -t vocab-master-frontend:latest `
   --build-arg VITE_API_URL=http://192.168.50.35:9876/api `
-  -f frontend.Dockerfile .
+  -f packages/frontend/frontend.Dockerfile ./packages/frontend
 
 # Create deploy directory if not exists
 if (!(Test-Path -Path "deploy/images")) {

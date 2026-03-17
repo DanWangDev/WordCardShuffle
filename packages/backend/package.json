@@ -1,5 +1,5 @@
 {
-  "name": "vocab-master-backend",
+  "name": "@vocab-master/backend",
   "version": "1.0.0",
   "description": "Backend API for Vocab Master multi-user application",
   "main": "dist/index.js",
