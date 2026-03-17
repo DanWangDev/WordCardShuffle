@@ -27,5 +27,9 @@
   "groups": "小组",
   "groupsDesc": "班级和学习小组",
   "myProgress": "我的进步",
-  "myProgressDesc": "掌握度和学习趋势"
+  "myProgressDesc": "掌握度和学习趋势",
+  "flashcards": "闪卡复习",
+  "flashcardsDesc": "间隔重复复习",
+  "sentenceBuild": "造句练习",
+  "sentenceBuildDesc": "用单词组成句子"
 }

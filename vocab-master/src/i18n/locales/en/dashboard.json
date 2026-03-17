@@ -27,5 +27,9 @@
   "groups": "Groups",
   "groupsDesc": "Classes & study groups",
   "myProgress": "My Progress",
-  "myProgressDesc": "Mastery & learning trends"
+  "myProgressDesc": "Mastery & learning trends",
+  "flashcards": "Flashcard Review",
+  "flashcardsDesc": "Spaced repetition review",
+  "sentenceBuild": "Sentence Builder",
+  "sentenceBuildDesc": "Build sentences from words"
 }

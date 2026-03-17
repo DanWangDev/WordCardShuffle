@@ -1,0 +1,20 @@
+{
+  "title": "闪卡复习",
+  "swipeLeftHint": "左滑：不认识",
+  "swipeRightHint": "右滑：认识",
+  "tapToFlip": "点击翻转",
+  "cardsRemaining": "剩余 {{count}} 张卡片",
+  "sessionComplete": "复习完成！",
+  "reviewed": "已复习卡片",
+  "correct": "正确",
+  "incorrect": "需要复习",
+  "reviewAgain": "再次复习",
+  "backToDashboard": "返回首页",
+  "noCardsToReview": "没有需要复习的卡片",
+  "noCardsMessage": "你已经全部复习完了！稍后再来查看更多复习内容。",
+  "know": "认识",
+  "dontKnow": "不认识",
+  "definition": "释义",
+  "synonyms": "同义词",
+  "example": "例句"
+}

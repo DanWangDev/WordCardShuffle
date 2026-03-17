@@ -1,0 +1,19 @@
+{
+  "sentenceBuild": "造句练习",
+  "instructions": "将单词排列成正确的句子",
+  "checkAnswer": "检查答案",
+  "correct": "正确！",
+  "incorrect": "不太对",
+  "next": "下一题",
+  "tryAgain": "再试一次",
+  "dragHint": "点击单词来组成句子",
+  "sessionComplete": "练习完成！",
+  "score": "得分：{{correct}}/{{total}}",
+  "noExercises": "没有可用的练习",
+  "noExercisesMessage": "这个词汇表没有可以用来造句的例句。",
+  "backToDashboard": "返回首页",
+  "buildSentenceFor": "用这个词造句：",
+  "yourSentence": "你的句子",
+  "correctSentence": "正确的句子",
+  "tapToRemove": "点击移除"
+}

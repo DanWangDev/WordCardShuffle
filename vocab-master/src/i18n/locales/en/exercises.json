@@ -1,0 +1,19 @@
+{
+  "sentenceBuild": "Sentence Builder",
+  "instructions": "Arrange the words to form the correct sentence",
+  "checkAnswer": "Check Answer",
+  "correct": "Correct!",
+  "incorrect": "Not quite right",
+  "next": "Next",
+  "tryAgain": "Try Again",
+  "dragHint": "Tap words to build the sentence",
+  "sessionComplete": "Session Complete!",
+  "score": "Score: {{correct}}/{{total}}",
+  "noExercises": "No Exercises Available",
+  "noExercisesMessage": "This wordlist doesn't have example sentences for sentence building.",
+  "backToDashboard": "Back to Dashboard",
+  "buildSentenceFor": "Build a sentence using:",
+  "yourSentence": "Your sentence",
+  "correctSentence": "Correct sentence",
+  "tapToRemove": "Tap to remove"
+}

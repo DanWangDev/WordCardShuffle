@@ -14,3 +14,5 @@ export { default as achievementsRoutes } from './achievements';
 export { default as leaderboardsRoutes } from './leaderboards';
 export { default as groupsRoutes } from './groups';
 export { default as reportsRoutes } from './reports';
+export { default as srsRoutes } from './srs';
+export { default as exercisesRoutes } from './exercises';

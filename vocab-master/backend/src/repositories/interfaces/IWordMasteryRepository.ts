@@ -1,5 +1,12 @@
 import type { WordMasteryRow, MasteryBreakdown, WordMasterySummary } from '../../types/index.js';
 
+export interface SrsScheduleUpdate {
+  nextReviewAt: string;
+  srsIntervalDays: number;
+  srsEaseFactor: number;
+  masteryLevel: number;
+}
+
 export interface IWordMasteryRepository {
   upsertFromAnswer(userId: number, word: string, isCorrect: boolean, wordlistId?: number): void;
   getByUserId(userId: number): WordMasteryRow[];
@@ -12,4 +19,8 @@ export interface IWordMasteryRepository {
     accuracy: number;
     wordsStudied: number;
   }>;
+  getReviewQueue(userId: number, limit: number): WordMasteryRow[];
+  getReviewQueueCount(userId: number): number;
+  updateSrsSchedule(id: number, data: SrsScheduleUpdate): void;
+  findByUserAndWord(userId: number, word: string): WordMasteryRow | undefined;
 }

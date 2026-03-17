@@ -15,6 +15,8 @@ import type achievementsEn from './locales/en/achievements.json'
 import type leaderboardEn from './locales/en/leaderboard.json'
 import type groupsEn from './locales/en/groups.json'
 import type reportsEn from './locales/en/reports.json'
+import type flashcardEn from './locales/en/flashcard.json'
+import type exercisesEn from './locales/en/exercises.json'
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -35,6 +37,8 @@ declare module 'i18next' {
       leaderboard: typeof leaderboardEn
       groups: typeof groupsEn
       reports: typeof reportsEn
+      flashcard: typeof flashcardEn
+      exercises: typeof exercisesEn
     }
   }
 }
