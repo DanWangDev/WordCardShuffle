@@ -11,7 +11,7 @@ This guide explains how to deploy the **11+ Vocabulary Master** application to a
 Before moving files, ensure you have the latest production build configuration.
 
 1.  **Check Environment Variables**:
-    Required file: `vocab-master/.env`
+    Required file: `.env` (at the repository root)
     Ensure it exists. If not, copy `.env.example` to `.env`:
     ```bash
     cp .env.example .env
@@ -19,20 +19,20 @@ Before moving files, ensure you have the latest production build configuration.
     *Note: You may need to update `VITE_API_URL` if you plan to access the app from other devices (see [Configuration checks](#configuration-checks)).*
 
 2.  **Verify Data**:
-    Ensure `src/assets/words.json` is present and populated.
+    Ensure `packages/frontend/src/assets/words.json` is present and populated.
 
 ## Step 2: Transfer Files to NAS
-You need to copy the `vocab-master` folder to your NAS.
+You need to copy the repository to your NAS.
 
 **Method A: SMB/Network Share (Easiest)**
 1.  Mount your NAS shared folder on your computer.
 2.  Create a folder on the NAS (e.g., `/docker/vocab-master`).
-3.  Copy all files from your local `vocab-master` folder to the NAS folder.
+3.  Copy all files from the repository root to the NAS folder.
     *   *Exclude*: `node_modules`, `.git`, `dist` (these will be rebuilt/ignored).
 
 **Method B: SCP/Command Line**
 ```bash
-scp -r ./vocab-master user@nas-ip:/volume1/docker/
+scp -r . user@nas-ip:/volume1/docker/vocab-master
 ```
 
 ## Step 3: Run with Docker Compose
@@ -40,10 +40,11 @@ scp -r ./vocab-master user@nas-ip:/volume1/docker/
     ```bash
     ssh user@your-nas-ip
     ```
-2.  **Navigate to the folder**:
+2.  **Navigate to the project root**:
     ```bash
     cd /volume1/docker/vocab-master
     ```
+    The `docker-compose.yml` file is at the repository root.
 3.  **Start the application**:
     ```bash
     sudo docker-compose up -d --build

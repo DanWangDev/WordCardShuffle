@@ -1,187 +1,114 @@
-# Monorepo Structure
+# Repository Structure
 
-> **Status:** Planned (monorepo migration not yet executed — current structure is flat)
-> **Related:** [mobile-migration-plan.md](./mobile-migration-plan.md)
-> **Date:** 2026-02-10
+> **Status:** Current (migrated March 2026)
+> **Related:** [project-restructure-recommendations.md](./project-restructure-recommendations.md)
 
-## Decision: Monorepo
+## Overview
 
-A monorepo using **npm/pnpm workspaces** was chosen over a multi-repo approach.
+The repository uses a `packages/*` layout. Each package has its own `package.json` and runs independent `npm ci` / build commands. There are no npm or pnpm workspaces linking the packages together.
 
-### Why Monorepo
-
-- **Shared code** — `ApiService`, types, quiz logic, and i18n are used by both web and mobile. A monorepo makes sharing trivial via workspace dependencies.
-- **Atomic changes** — A type change can be updated across web, mobile, and backend in a single commit/PR.
-- **Simpler CI** — One pipeline can test everything together.
-- **Right for the team size** — Multi-repo overhead (publishing packages, versioning, cross-repo PRs) isn't justified until 10+ developers.
-
-## Target Structure
+## Directory Layout
 
 ```
-WordCardShuffle/
+WordCardShffle/
 ├── packages/
-│   ├── shared/                        # Shared business logic
+│   ├── frontend/            # React SPA (Vite, Tailwind, i18n)  [@vocab-master/frontend]
 │   │   ├── src/
-│   │   │   ├── types/                 # TypeScript interfaces
-│   │   │   │   ├── wordlist.ts
-│   │   │   │   ├── user.ts
-│   │   │   │   └── index.ts
-│   │   │   ├── services/
-│   │   │   │   ├── ApiService.ts      # REST client
-│   │   │   │   └── QuizGenerator.ts   # Quiz logic
-│   │   │   ├── i18n/                  # Translations & config
-│   │   │   │   ├── en.json
-│   │   │   │   ├── zh.json
-│   │   │   │   └── index.ts
-│   │   │   ├── contexts/              # Shared React contexts
-│   │   │   │   ├── AuthContext.tsx
-│   │   │   │   └── NotificationContext.tsx
-│   │   │   └── utils/                 # Shared utilities
-│   │   ├── package.json               # name: "@wordcard/shared"
-│   │   └── tsconfig.json
-│   │
-│   ├── web/                           # Current frontend (moved)
-│   │   ├── src/
-│   │   │   ├── components/            # Web-specific React components
-│   │   │   │   ├── admin/
-│   │   │   │   ├── auth/
-│   │   │   │   ├── quiz/
-│   │   │   │   ├── study/
-│   │   │   │   ├── dashboard/
-│   │   │   │   └── ...
-│   │   │   ├── hooks/                 # Web-specific hooks
-│   │   │   ├── layouts/               # Web layouts
-│   │   │   ├── routes/                # react-router-dom routes
-│   │   │   ├── services/
-│   │   │   │   └── StorageService.ts  # localStorage implementation
-│   │   │   ├── App.tsx
-│   │   │   ├── main.tsx
-│   │   │   └── index.css
+│   │   │   ├── components/  # UI components organised by domain
+│   │   │   ├── contexts/    # React contexts (Auth, Notification, App)
+│   │   │   ├── hooks/       # Custom React hooks
+│   │   │   ├── i18n/        # i18next config and locale files (en, zh-CN)
+│   │   │   ├── routes/      # react-router-dom route definitions
+│   │   │   ├── services/    # API client modules, StorageService
+│   │   │   └── types/       # Frontend TypeScript interfaces
 │   │   ├── public/
-│   │   ├── index.html
-│   │   ├── package.json               # name: "@wordcard/web"
+│   │   ├── package.json
 │   │   ├── vite.config.ts
 │   │   ├── tailwind.config.js
 │   │   └── tsconfig.json
 │   │
-│   ├── mobile/                        # React Native (Expo)
-│   │   ├── app/                       # Expo Router screens
-│   │   │   ├── (tabs)/
-│   │   │   │   ├── index.tsx          # Dashboard
-│   │   │   │   ├── study.tsx          # Study mode
-│   │   │   │   ├── quiz.tsx           # Quiz mode
-│   │   │   │   └── profile.tsx        # Settings/profile
-│   │   │   ├── auth/
-│   │   │   │   ├── login.tsx
-│   │   │   │   └── register.tsx
-│   │   │   ├── _layout.tsx
-│   │   │   └── +not-found.tsx
-│   │   ├── components/                # RN-specific components
-│   │   │   ├── FlashCard.tsx
-│   │   │   ├── QuizCard.tsx
-│   │   │   ├── StatsChart.tsx
-│   │   │   └── ...
-│   │   ├── services/
-│   │   │   └── StorageService.ts      # AsyncStorage implementation
-│   │   ├── constants/
-│   │   ├── assets/
-│   │   ├── app.json
-│   │   ├── package.json               # name: "@wordcard/mobile"
+│   ├── backend/             # Express API (SQLite, JWT auth)  [@vocab-master/backend]
+│   │   ├── src/
+│   │   │   ├── config/      # Database connection, migration runner
+│   │   │   ├── jobs/        # Background job queue
+│   │   │   ├── middleware/  # Auth, validation, rate limiting, cache, turnstile
+│   │   │   ├── migrations/  # Sequential DB migrations (001–020)
+│   │   │   ├── repositories/# Data access layer (interfaces + SQLite implementations)
+│   │   │   ├── routes/      # Express route handlers
+│   │   │   ├── services/    # Business logic (auth, email, audit, SRS, PvP, etc.)
+│   │   │   ├── types/       # Backend TypeScript interfaces
+│   │   │   └── index.ts     # Server entry point
+│   │   ├── data/            # SQLite database file (gitignored)
+│   │   ├── package.json
+│   │   ├── Dockerfile
 │   │   └── tsconfig.json
 │   │
-│   └── backend/                       # Current backend (moved)
+│   ├── shared/              # Shared TypeScript types
+│   │   └── src/
+│   │
+│   └── mobile/              # React Native (Expo)
+│       ├── app/             # Expo Router screens
 │       ├── src/
-│       │   ├── config/
-│       │   ├── controllers/
-│       │   ├── middleware/
-│       │   ├── migrations/
-│       │   ├── repositories/
-│       │   ├── routes/
-│       │   ├── services/
-│       │   ├── types/
-│       │   └── index.ts
-│       ├── data/
-│       ├── package.json               # name: "@wordcard/backend"
-│       ├── Dockerfile
+│       │   ├── contexts/    # AuthContext, NotificationContext
+│       │   └── services/    # ApiService (mobile variant)
+│       ├── assets/
+│       ├── app.json
+│       ├── package.json
 │       └── tsconfig.json
 │
-├── package.json                       # Workspace root
-├── pnpm-workspace.yaml                # (if using pnpm)
-├── docker-compose.yml
-├── docs/
-│   ├── mobile-migration-plan.md
-│   └── repo-structure.md              # This file
-├── .github/
-│   └── workflows/
+├── docs/                    # Architecture, security, deployment docs
+├── deploy/                  # NAS deployment scripts and prod compose
+├── archive/                 # Legacy word extraction scripts and design assets
+├── scripts/                 # Operational scripts (backup, etc.)
+├── .github/                 # GitHub Actions workflows
+│
+├── docker-compose.yml       # Multi-container orchestration
+├── frontend.Dockerfile      # Web frontend build
+├── nginx.conf               # Reverse proxy config
 └── .gitignore
 ```
 
-## Workspace Configuration
+## Package Details
 
-### Root `package.json`
+### `packages/frontend/`
 
-```json
-{
-  "private": true,
-  "workspaces": ["packages/*"],
-  "scripts": {
-    "dev:web": "npm -w @wordcard/web run dev",
-    "dev:mobile": "npm -w @wordcard/mobile run start",
-    "dev:backend": "npm -w @wordcard/backend run dev",
-    "build:web": "npm -w @wordcard/web run build",
-    "build:backend": "npm -w @wordcard/backend run build",
-    "lint": "npm run lint --workspaces"
-  }
-}
+The Vite + React 19 web application. Tailwind CSS for styling, Framer Motion for animations, Recharts for charts, react-router-dom for routing, and i18next for internationalisation (English + Simplified Chinese).
+
+### `packages/backend/`
+
+The Express + TypeScript API server. Uses better-sqlite3 for the database, Zod for input validation, JWT for authentication (access + refresh tokens), and bcrypt for password hashing. The repository pattern separates data access behind interfaces with SQLite implementations.
+
+### `packages/shared/`
+
+Shared TypeScript type definitions used across frontend, backend, and mobile packages. Imported via relative paths (no workspace linking).
+
+### `packages/mobile/`
+
+The Expo / React Native mobile application. Uses Expo Router for navigation, expo-secure-store for token storage, and shares the API client pattern with the web frontend.
+
+## Top-Level Files
+
+| File | Purpose |
+|------|---------|
+| `docker-compose.yml` | Development and production multi-container orchestration |
+| `frontend.Dockerfile` | Multi-stage build for the web frontend |
+| `nginx.conf` | Reverse proxy with security headers |
+| `.gitignore` | Covers `.env*`, `node_modules`, `data/`, build outputs |
+
+## Building and Running
+
+Each package is built independently:
+
+```bash
+# Backend
+cd packages/backend && npm ci && npm run build
+
+# Frontend
+cd packages/frontend && npm ci && npm run build
+
+# Mobile
+cd packages/mobile && npm ci && npx expo start
+
+# Docker (from repo root)
+docker-compose up --build -d
 ```
-
-### Shared package dependency (in web & mobile `package.json`)
-
-```json
-{
-  "dependencies": {
-    "@wordcard/shared": "workspace:*"
-  }
-}
-```
-
-### Usage in code
-
-```typescript
-// In packages/web/src/components/quiz/QuizScreen.tsx
-// or packages/mobile/app/(tabs)/quiz.tsx
-
-import { ApiService } from '@wordcard/shared/services/ApiService';
-import { QuizGenerator } from '@wordcard/shared/services/QuizGenerator';
-import type { Wordlist } from '@wordcard/shared/types';
-```
-
-## Platform-Specific Implementations
-
-The `StorageService` is the primary example of platform-specific code. Both web and mobile implement the same interface but use different storage backends:
-
-```typescript
-// Interface (in @wordcard/shared)
-export interface IStorageService {
-  getSettings(): UserSettings;
-  saveSettings(settings: UserSettings): void;
-  getStats(): UserStats;
-  saveStats(stats: UserStats): void;
-}
-
-// Web implementation: localStorage
-// Mobile implementation: AsyncStorage
-```
-
-## Migration Steps
-
-1. Create `packages/` directory
-2. Move `backend/` → `packages/backend/`
-3. Move frontend source → `packages/web/` (keep config files at correct level)
-4. Extract shared code → `packages/shared/`
-5. Update all import paths
-6. Set up workspace root `package.json`
-7. Update Docker config to point to new paths
-8. Update GitHub Actions workflows
-9. Verify web + backend still work
-10. Scaffold `packages/mobile/` with `npx create-expo-app`

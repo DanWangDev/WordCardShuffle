@@ -51,23 +51,23 @@ export const userRepository: IUserRepository = new SqliteUserRepository(db);
 ```
 
 **Files created:**
-- `backend/src/repositories/interfaces/` — 9 interface files + barrel export
-- `backend/src/repositories/sqlite/` — 9 implementation files + barrel export
-- `backend/src/repositories/index.ts` — rewired to instantiate classes
+- `packages/backend/src/repositories/interfaces/` — 9 interface files + barrel export
+- `packages/backend/src/repositories/sqlite/` — 9 implementation files + barrel export
+- `packages/backend/src/repositories/index.ts` — rewired to instantiate classes
 
 ### 1.2 Enable WAL Mode (DONE)
 
-Added `db.pragma('journal_mode = WAL')` in `backend/src/config/database.ts`.
+Added `db.pragma('journal_mode = WAL')` in `packages/backend/src/config/database.ts`.
 
 ### 1.3 Pagination Middleware (DONE)
 
-- `backend/src/middleware/pagination.ts` — extracts `page`, `limit`, `sortBy`, `sortOrder` from query params
-- `backend/src/types/pagination.ts` — `PaginationParams`, `PaginatedResponse<T>` types
+- `packages/backend/src/middleware/pagination.ts` — extracts `page`, `limit`, `sortBy`, `sortOrder` from query params
+- `packages/backend/src/types/pagination.ts` — `PaginationParams`, `PaginatedResponse<T>` types
 - Backward compatible: defaults to page=1, limit=50 when no params
 
 ### 1.4 Split ApiService.ts (DONE)
 
-Split 837-line monolith into domain-specific modules under `src/services/api/`:
+Split 837-line monolith into domain-specific modules under `packages/frontend/src/services/api/`:
 - `baseApi.ts` — shared fetch wrapper, token management, refresh logic
 - `authApi.ts`, `statsApi.ts`, `wordlistApi.ts`, `quizApi.ts`, `challengeApi.ts`, `settingsApi.ts`, `notificationApi.ts`, `adminApi.ts`, `linkRequestApi.ts`
 - `index.ts` — barrel re-exports
@@ -75,12 +75,12 @@ Split 837-line monolith into domain-specific modules under `src/services/api/`:
 
 ### 1.5 In-Memory Response Cache (DONE)
 
-- `backend/src/middleware/cache.ts` — Map-based TTL cache, key = `path:userId:queryHash`
+- `packages/backend/src/middleware/cache.ts` — Map-based TTL cache, key = `path:userId:queryHash`
 - Configurable TTL per route (default 60s, stats 300s)
 
 ### 1.6 Simple Background Job Queue (DONE)
 
-- `backend/src/jobs/jobQueue.ts` — in-process queue using `setInterval`
+- `packages/backend/src/jobs/jobQueue.ts` — in-process queue using `setInterval`
 - Replaced raw `setInterval` calls in `index.ts` with structured queue
 - Methods: `register()`, `start()`, `stop()`, `getStatus()`
 
@@ -186,17 +186,17 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 ### Backend (DONE)
 
 **Files created:**
-- `backend/src/migrations/019_add_word_mastery.ts` — word mastery + email digest tables
-- `backend/src/repositories/interfaces/IWordMasteryRepository.ts` — interface with upsert, breakdown, trend queries
-- `backend/src/repositories/sqlite/SqliteWordMasteryRepository.ts` — SQLite implementation with mastery level computation
-- `backend/src/services/wordMasteryService.ts` — service wrapping repository methods
-- `backend/src/services/reportService.ts` — student summary generation and CSV export
-- `backend/src/routes/reports.ts` — 5 endpoints
+- `packages/backend/src/migrations/019_add_word_mastery.ts` — word mastery + email digest tables
+- `packages/backend/src/repositories/interfaces/IWordMasteryRepository.ts` — interface with upsert, breakdown, trend queries
+- `packages/backend/src/repositories/sqlite/SqliteWordMasteryRepository.ts` — SQLite implementation with mastery level computation
+- `packages/backend/src/services/wordMasteryService.ts` — service wrapping repository methods
+- `packages/backend/src/services/reportService.ts` — student summary generation and CSV export
+- `packages/backend/src/routes/reports.ts` — 5 endpoints
 
 **Files modified:**
-- `backend/src/routes/quizResults.ts` — integrated word mastery recording on quiz answer save
-- `backend/src/repositories/index.ts` — wired word mastery repository
-- `backend/src/index.ts` — registered reports routes
+- `packages/backend/src/routes/quizResults.ts` — integrated word mastery recording on quiz answer save
+- `packages/backend/src/repositories/index.ts` — wired word mastery repository
+- `packages/backend/src/index.ts` — registered reports routes
 
 **Endpoints:**
 - `GET /api/reports/mastery` — current user's mastery breakdown, weak/strong words
@@ -208,17 +208,17 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 ### Frontend (DONE)
 
 **Files created:**
-- `src/components/reports/ReportsPage.tsx` — main reports page with mastery + trends
-- `src/components/reports/MasteryBreakdown.tsx` — animated progress bar with level breakdown
-- `src/components/reports/LearningTrendChart.tsx` — bar charts for accuracy, quizzes, words
-- `src/components/reports/WordMasteryList.tsx` — weak/strong word list display
-- `src/services/api/reportApi.ts` — API module for reports endpoints
-- `src/i18n/locales/en/reports.json` + `zh-CN/reports.json` — translations
+- `packages/frontend/src/components/reports/ReportsPage.tsx` — main reports page with mastery + trends
+- `packages/frontend/src/components/reports/MasteryBreakdown.tsx` — animated progress bar with level breakdown
+- `packages/frontend/src/components/reports/LearningTrendChart.tsx` — bar charts for accuracy, quizzes, words
+- `packages/frontend/src/components/reports/WordMasteryList.tsx` — weak/strong word list display
+- `packages/frontend/src/services/api/reportApi.ts` — API module for reports endpoints
+- `packages/frontend/src/i18n/locales/en/reports.json` + `zh-CN/reports.json` — translations
 
 **Files modified:**
-- `src/components/dashboard/Dashboard.tsx` — added "My Progress" card for students
-- `src/components/dashboard/ModeCard.tsx` — added 'reports' color variant
-- `src/routes/index.tsx` — lazy-loaded /reports route for students
+- `packages/frontend/src/components/dashboard/Dashboard.tsx` — added "My Progress" card for students
+- `packages/frontend/src/components/dashboard/ModeCard.tsx` — added 'reports' color variant
+- `packages/frontend/src/routes/index.tsx` — lazy-loaded /reports route for students
 
 ### Deferred Items
 
@@ -238,16 +238,16 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 ### Backend (DONE)
 
 **Files created:**
-- `backend/src/services/srsService.ts` — SM-2 algorithm variant with quality 0-5 scale, interval scheduling, ease factor adjustment
-- `backend/src/services/exerciseService.ts` — Sentence building from existing `example_sentences` data
-- `backend/src/routes/srs.ts` — 3 endpoints: GET /review-queue, POST /review, GET /count
-- `backend/src/routes/exercises.ts` — 1 endpoint: GET /sentence-build
+- `packages/backend/src/services/srsService.ts` — SM-2 algorithm variant with quality 0-5 scale, interval scheduling, ease factor adjustment
+- `packages/backend/src/services/exerciseService.ts` — Sentence building from existing `example_sentences` data
+- `packages/backend/src/routes/srs.ts` — 3 endpoints: GET /review-queue, POST /review, GET /count
+- `packages/backend/src/routes/exercises.ts` — 1 endpoint: GET /sentence-build
 
 **Files modified:**
-- `backend/src/repositories/interfaces/IWordMasteryRepository.ts` — Added `getReviewQueue`, `getReviewQueueCount`, `updateSrsSchedule`, `findByUserAndWord`
-- `backend/src/repositories/sqlite/SqliteWordMasteryRepository.ts` — Implemented 4 new methods
-- `backend/src/routes/index.ts` — Added srs and exercises route exports
-- `backend/src/index.ts` — Mounted `/api/srs` and `/api/exercises` routes
+- `packages/backend/src/repositories/interfaces/IWordMasteryRepository.ts` — Added `getReviewQueue`, `getReviewQueueCount`, `updateSrsSchedule`, `findByUserAndWord`
+- `packages/backend/src/repositories/sqlite/SqliteWordMasteryRepository.ts` — Implemented 4 new methods
+- `packages/backend/src/routes/index.ts` — Added srs and exercises route exports
+- `packages/backend/src/index.ts` — Mounted `/api/srs` and `/api/exercises` routes
 
 **Endpoints:**
 - `GET /api/srs/review-queue?limit=20` — SRS review queue with enriched word data
@@ -258,27 +258,27 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 ### Frontend (DONE)
 
 **Files created:**
-- `src/hooks/useSpeechSynthesis.ts` — Web Speech API wrapper hook
-- `src/components/common/PronunciationButton.tsx` — Audio pronunciation button
-- `src/components/flashcard/FlashcardCard.tsx` — Swipe-based card with Framer Motion gestures and 3D flip
-- `src/components/flashcard/FlashcardProgress.tsx` — Progress bar with correct/incorrect counters
-- `src/components/flashcard/FlashcardSession.tsx` — Full session controller with SRS queue
-- `src/components/exercises/SentenceBuildCard.tsx` — Tap-to-place token arrangement with answer checking
-- `src/components/exercises/SentenceBuildSession.tsx` — Session controller with wordlist-based exercises
-- `src/services/api/srsApi.ts` — SRS API module
-- `src/services/api/exerciseApi.ts` — Exercise API module
-- `src/i18n/locales/en/flashcard.json` + `zh-CN/flashcard.json` — Flashcard translations
-- `src/i18n/locales/en/exercises.json` + `zh-CN/exercises.json` — Exercise translations
+- `packages/frontend/src/hooks/useSpeechSynthesis.ts` — Web Speech API wrapper hook
+- `packages/frontend/src/components/common/PronunciationButton.tsx` — Audio pronunciation button
+- `packages/frontend/src/components/flashcard/FlashcardCard.tsx` — Swipe-based card with Framer Motion gestures and 3D flip
+- `packages/frontend/src/components/flashcard/FlashcardProgress.tsx` — Progress bar with correct/incorrect counters
+- `packages/frontend/src/components/flashcard/FlashcardSession.tsx` — Full session controller with SRS queue
+- `packages/frontend/src/components/exercises/SentenceBuildCard.tsx` — Tap-to-place token arrangement with answer checking
+- `packages/frontend/src/components/exercises/SentenceBuildSession.tsx` — Session controller with wordlist-based exercises
+- `packages/frontend/src/services/api/srsApi.ts` — SRS API module
+- `packages/frontend/src/services/api/exerciseApi.ts` — Exercise API module
+- `packages/frontend/src/i18n/locales/en/flashcard.json` + `zh-CN/flashcard.json` — Flashcard translations
+- `packages/frontend/src/i18n/locales/en/exercises.json` + `zh-CN/exercises.json` — Exercise translations
 
 **Files modified:**
-- `src/components/study/FlashCard.tsx` — Added PronunciationButton to word display
-- `src/components/dashboard/Dashboard.tsx` — Added Flashcard Review and Sentence Builder ModeCards
-- `src/components/dashboard/ModeCard.tsx` — Added 'flashcard' (fuchsia) and 'exercises' (lime) color variants
-- `src/routes/index.tsx` — Added lazy-loaded `/flashcards` and `/exercises/sentence-build` routes
-- `src/services/api/index.ts` — Added srsApi and exerciseApi exports
-- `src/hooks/index.ts` — Added useSpeechSynthesis export
-- `src/i18n/index.ts` — Registered flashcard and exercises namespaces
-- `src/i18n/types.ts` — Added flashcard and exercises type declarations
+- `packages/frontend/src/components/study/FlashCard.tsx` — Added PronunciationButton to word display
+- `packages/frontend/src/components/dashboard/Dashboard.tsx` — Added Flashcard Review and Sentence Builder ModeCards
+- `packages/frontend/src/components/dashboard/ModeCard.tsx` — Added 'flashcard' (fuchsia) and 'exercises' (lime) color variants
+- `packages/frontend/src/routes/index.tsx` — Added lazy-loaded `/flashcards` and `/exercises/sentence-build` routes
+- `packages/frontend/src/services/api/index.ts` — Added srsApi and exerciseApi exports
+- `packages/frontend/src/hooks/index.ts` — Added useSpeechSynthesis export
+- `packages/frontend/src/i18n/index.ts` — Registered flashcard and exercises namespaces
+- `packages/frontend/src/i18n/types.ts` — Added flashcard and exercises type declarations
 - Dashboard i18n files — Added flashcards, flashcardsDesc, sentenceBuild, sentenceBuildDesc keys
 
 ### Deferred Items
@@ -333,8 +333,8 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 After each phase:
 
-1. **Backend tests**: `cd vocab-master/backend && npm test` — all existing + new tests pass
-2. **Frontend tests**: `cd vocab-master && npm test` — all existing + new tests pass
+1. **Backend tests**: `cd packages/backend && npm test` — all existing + new tests pass
+2. **Frontend tests**: `cd packages/frontend && npm test` — all existing + new tests pass
 3. **TypeScript**: `npx tsc --noEmit` clean on both frontend and backend
 4. **CI**: Push to feature branch, verify GitHub Actions green
 5. **Docker build**: `docker compose build` succeeds

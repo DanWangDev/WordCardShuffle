@@ -1,5 +1,7 @@
 # 11+ Vocabulary Master
 
+> **Note:** For the current repository layout, see the root [README](../README.md) and [docs/repo-structure.md](./repo-structure.md). This document describes the application features and API surface.
+
 A full-stack vocabulary learning application for children preparing for the 11+ exam (and beyond). Features flashcard study, quizzes, daily challenges, parent dashboards, and custom wordlists — with web and mobile clients backed by a shared API.
 
 ## Features
@@ -73,45 +75,41 @@ See [docs/security-hardening.md](docs/security-hardening.md) for the full securi
 ## Project Structure
 
 ```
-vocab-master/
-├── backend/                  # Express API server
-│   ├── src/
-│   │   ├── config/           # Database, migration runner
-│   │   ├── middleware/       # Auth, validation, rate limiting
-│   │   ├── migrations/       # Sequential DB migrations (001–013)
-│   │   ├── repositories/     # Data access layer (SQLite)
-│   │   ├── routes/           # Express route handlers
-│   │   ├── services/         # Business logic (auth, email, Google OAuth, audit, logger)
-│   │   ├── types/            # Shared TypeScript interfaces
-│   │   └── index.ts          # Server entry point
-│   └── Dockerfile
-├── mobile/                   # Expo React Native app
-│   ├── app/                  # Expo Router screens
-│   ├── src/
-│   │   ├── contexts/         # AuthContext, NotificationContext
-│   │   └── services/         # ApiService (mobile variant)
-│   └── app.json
-├── src/                      # Web frontend (Vite + React)
-│   ├── components/
-│   │   ├── admin/            # Admin panel components
-│   │   ├── auth/             # Login, register, Google sign-in, profile completion
-│   │   ├── common/           # Shared UI primitives (Button, etc.)
-│   │   ├── linking/          # Student search & link request modals
-│   │   ├── notifications/    # NotificationBell
-│   │   ├── parent/           # Parent dashboard, user list, modals
-│   │   ├── quiz/             # Quiz mode components
-│   │   └── study/            # Flashcard study components
-│   ├── contexts/             # AuthContext, NotificationContext
-│   ├── i18n/                 # i18next config and locale files (en, zh-CN)
-│   └── services/             # ApiService, StorageService
-├── shared/                   # Shared types and i18n locales
-├── scripts/                  # Operational scripts (backup, etc.)
-├── docs/                     # Architecture and planning documents
-├── docker-compose.yml        # Multi-container orchestration
-├── frontend.Dockerfile       # Web frontend build
-├── nginx.conf                # Reverse proxy config
-└── package.json              # Root package (web frontend)
+WordCardShffle/                  # Repository root
+├── packages/
+│   ├── frontend/                # React SPA (Vite, Tailwind, i18n)
+│   │   ├── src/
+│   │   │   ├── components/      # UI components by domain
+│   │   │   ├── contexts/        # AuthContext, NotificationContext
+│   │   │   ├── i18n/            # i18next config and locale files (en, zh-CN)
+│   │   │   └── services/        # ApiService, StorageService
+│   │   └── package.json
+│   ├── backend/                 # Express API (SQLite, JWT auth)
+│   │   ├── src/
+│   │   │   ├── config/          # Database, migration runner
+│   │   │   ├── middleware/      # Auth, validation, rate limiting
+│   │   │   ├── migrations/      # Sequential DB migrations
+│   │   │   ├── repositories/    # Data access layer (SQLite)
+│   │   │   ├── routes/          # Express route handlers
+│   │   │   ├── services/        # Business logic (auth, email, audit, logger)
+│   │   │   └── types/           # TypeScript interfaces
+│   │   └── package.json
+│   ├── shared/                  # Shared TypeScript types
+│   └── mobile/                  # React Native (Expo)
+│       ├── app/                 # Expo Router screens
+│       ├── src/
+│       │   ├── contexts/        # AuthContext, NotificationContext
+│       │   └── services/        # ApiService (mobile variant)
+│       └── app.json
+├── docs/                        # Architecture, security, deployment docs
+├── deploy/                      # NAS deployment scripts and prod compose
+├── archive/                     # Legacy word extraction scripts and design assets
+├── docker-compose.yml           # Multi-container orchestration (repo root)
+├── nginx.conf                   # Reverse proxy config
+└── frontend.Dockerfile          # Web frontend build
 ```
+
+See [docs/repo-structure.md](./repo-structure.md) for full details.
 
 ## API Endpoints
 
@@ -204,20 +202,21 @@ vocab-master/
 
 **Backend:**
 ```bash
-cd backend
+cd packages/backend
 npm install
 npm run dev          # Starts on http://localhost:9876
 ```
 
 **Web Frontend:**
 ```bash
+cd packages/frontend
 npm install
 npm run dev          # Starts on http://localhost:5173
 ```
 
 **Mobile:**
 ```bash
-cd mobile
+cd packages/mobile
 npm install
 npx expo start
 ```

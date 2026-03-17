@@ -66,11 +66,11 @@ The existing Express + SQLite backend needs **no structural changes** for mobile
 
 ### Phase 1 — Monorepo Setup (1 week)
 - Restructure repo into `packages/` monorepo (see [repo-structure.md](./repo-structure.md))
-- Extract shared code into `@wordcard/shared` package
+- Extract shared code into `packages/shared/`
 - Verify web app still works with new structure
 
 ### Phase 2 — Mobile Scaffold (1 week)
-- Initialize Expo app in `packages/mobile`
+- Initialize Expo app in `packages/mobile/`
 - Set up navigation (Expo Router)
 - Wire up shared `ApiService` and auth flow
 - Implement login/register screens

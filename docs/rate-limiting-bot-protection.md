@@ -63,7 +63,7 @@ Client Request
 4. The backend middleware POSTs the token to Cloudflare's `siteverify` endpoint
 5. Cloudflare responds with `success: true/false`
 
-### Middleware: `backend/src/middleware/turnstile.ts`
+### Middleware: `packages/backend/src/middleware/turnstile.ts`
 
 **Bypass rules:**
 - **Dev mode** — if `TURNSTILE_SECRET_KEY` env var is not set, middleware passes through
@@ -79,7 +79,7 @@ Client Request
 | `POST /google` | No | No |
 | `POST /forgot-password` | No | No |
 
-### Frontend Widget: `src/components/auth/TurnstileWidget.tsx`
+### Frontend Widget: `packages/frontend/src/components/auth/TurnstileWidget.tsx`
 
 - Uses `@marsidev/react-turnstile` (~2KB)
 - Renders invisible widget when `VITE_TURNSTILE_SITE_KEY` is set
@@ -106,7 +106,7 @@ TURNSTILE_SITE_KEY=0x4BBBBB...
 
 ## Login Brute-Force Protection
 
-### Middleware: `backend/src/middleware/bruteForce.ts`
+### Middleware: `packages/backend/src/middleware/bruteForce.ts`
 
 In-memory `Map<username, { count, lastAttempt, lockedUntil }>` with progressive lockout:
 
@@ -131,7 +131,7 @@ Mobile clients add `X-Client-Platform: mobile` to all request headers. This tell
 - Google OAuth on mobile validates tokens server-side (bots can't forge them)
 
 The header is set in:
-- `mobile/src/services/ApiService.ts` — `fetchWithAuth()` default headers and all unauthenticated auth methods
+- `packages/mobile/src/services/ApiService.ts` — `fetchWithAuth()` default headers and all unauthenticated auth methods
 
 ## Environment Variables
 
@@ -155,22 +155,22 @@ Added to `en/auth.json` and `zh-CN/auth.json`:
 ## Files Changed
 
 ### New Files
-- `backend/src/middleware/turnstile.ts`
-- `backend/src/middleware/bruteForce.ts`
-- `src/components/auth/TurnstileWidget.tsx`
+- `packages/backend/src/middleware/turnstile.ts`
+- `packages/backend/src/middleware/bruteForce.ts`
+- `packages/frontend/src/components/auth/TurnstileWidget.tsx`
 
 ### Modified Files
-- `backend/src/index.ts` — added `registrationLimiter`
-- `backend/src/routes/auth.ts` — wired turnstile + brute force middleware
-- `backend/src/middleware/validate.ts` — added `turnstileToken` to schemas
+- `packages/backend/src/index.ts` — added `registrationLimiter`
+- `packages/backend/src/routes/auth.ts` — wired turnstile + brute force middleware
+- `packages/backend/src/middleware/validate.ts` — added `turnstileToken` to schemas
 - `docker-compose.yml` — added Turnstile env vars
-- `package.json` — added `@marsidev/react-turnstile`
-- `src/components/auth/LoginForm.tsx` — added TurnstileWidget + token state
-- `src/components/auth/StudentRegisterForm.tsx` — same
-- `src/components/auth/ParentRegisterForm.tsx` — same
-- `src/components/auth/AuthPage.tsx` — forwarded turnstileToken
-- `src/contexts/AuthContext.tsx` — added turnstileToken param
-- `src/services/ApiService.ts` — added turnstileToken param
-- `mobile/src/services/ApiService.ts` — added `X-Client-Platform: mobile` header
-- `src/i18n/locales/en/auth.json` — added 3 keys
-- `src/i18n/locales/zh-CN/auth.json` — added 3 keys
+- `packages/frontend/package.json` — added `@marsidev/react-turnstile`
+- `packages/frontend/src/components/auth/LoginForm.tsx` — added TurnstileWidget + token state
+- `packages/frontend/src/components/auth/StudentRegisterForm.tsx` — same
+- `packages/frontend/src/components/auth/ParentRegisterForm.tsx` — same
+- `packages/frontend/src/components/auth/AuthPage.tsx` — forwarded turnstileToken
+- `packages/frontend/src/contexts/AuthContext.tsx` — added turnstileToken param
+- `packages/frontend/src/services/ApiService.ts` — added turnstileToken param
+- `packages/mobile/src/services/ApiService.ts` — added `X-Client-Platform: mobile` header
+- `packages/frontend/src/i18n/locales/en/auth.json` — added 3 keys
+- `packages/frontend/src/i18n/locales/zh-CN/auth.json` — added 3 keys

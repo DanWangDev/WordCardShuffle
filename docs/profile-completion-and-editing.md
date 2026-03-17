@@ -41,17 +41,17 @@ Content-Type: application/json
 
 | File | Change |
 |------|--------|
-| `backend/src/middleware/validate.ts` | Added `updateProfileSchema` |
-| `backend/src/repositories/userRepository.ts` | Added `updateUsername()` method |
-| `backend/src/services/authService.ts` | Added `updateProfile()` method (uniqueness check + repo calls) |
-| `backend/src/routes/auth.ts` | Added `PATCH /api/auth/profile` route |
-| `backend/src/types/index.ts` | Added `UpdateProfileRequest` interface |
+| `packages/backend/src/middleware/validate.ts` | Added `updateProfileSchema` |
+| `packages/backend/src/repositories/userRepository.ts` | Added `updateUsername()` method |
+| `packages/backend/src/services/authService.ts` | Added `updateProfile()` method (uniqueness check + repo calls) |
+| `packages/backend/src/routes/auth.ts` | Added `PATCH /api/auth/profile` route |
+| `packages/backend/src/types/index.ts` | Added `UpdateProfileRequest` interface |
 
 ## Web Frontend
 
 ### Profile completion modal
 
-`src/components/auth/CompleteProfileModal.tsx` — a reusable modal with two modes:
+`packages/frontend/src/components/auth/CompleteProfileModal.tsx` — a reusable modal with two modes:
 
 - **`complete` mode** — shown automatically after first Google sign-in (`isNewGoogleUser === true`). Pre-fills the derived username and Google display name. Offers "Skip" and "Save" buttons.
 - **`edit` mode** — opened manually from the parent dashboard header (pencil icon next to the user's name). Shows "Cancel" and "Save" buttons.
@@ -78,10 +78,10 @@ Added `updateProfile({ username?, displayName? })` → `PATCH /api/auth/profile`
 
 | File | Change |
 |------|--------|
-| `src/services/ApiService.ts` | Added `updateProfile()` method |
-| `src/contexts/AuthContext.tsx` | Added state, actions, and methods for profile |
-| `src/components/auth/CompleteProfileModal.tsx` | **New file** — modal component |
-| `src/components/parent/ParentDashboard.tsx` | Added edit icon + modal rendering |
+| `packages/frontend/src/services/ApiService.ts` | Added `updateProfile()` method |
+| `packages/frontend/src/contexts/AuthContext.tsx` | Added state, actions, and methods for profile |
+| `packages/frontend/src/components/auth/CompleteProfileModal.tsx` | **New file** — modal component |
+| `packages/frontend/src/components/parent/ParentDashboard.tsx` | Added edit icon + modal rendering |
 
 ## Mobile (API only)
 
@@ -89,8 +89,8 @@ Mobile `ApiService` and `AuthContext` were updated with the same `updateProfile(
 
 | File | Change |
 |------|--------|
-| `mobile/src/services/ApiService.ts` | Added `updateProfile()` method |
-| `mobile/src/contexts/AuthContext.tsx` | Added state, actions, and methods for profile |
+| `packages/mobile/src/services/ApiService.ts` | Added `updateProfile()` method |
+| `packages/mobile/src/contexts/AuthContext.tsx` | Added state, actions, and methods for profile |
 
 ## i18n
 

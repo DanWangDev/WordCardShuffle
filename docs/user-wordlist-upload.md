@@ -153,7 +153,7 @@ eloquent,"fluent or persuasive speaking","articulate;expressive","She gave an el
 
 ## Frontend Architecture
 
-### New Types (`src/types/wordlist.ts`)
+### New Types (`packages/frontend/src/types/wordlist.ts`)
 
 ```typescript
 interface Wordlist {
@@ -190,10 +190,10 @@ interface WordlistWord {
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| WordlistSelector | `src/components/wordlists/WordlistSelector.tsx` | Card grid to browse & select active list |
-| WordlistManager | `src/components/wordlists/WordlistManager.tsx` | Admin/parent view: create, edit, delete lists |
-| ImportModal | `src/components/wordlists/ImportModal.tsx` | CSV/JSON upload with preview & validation |
-| WordlistBadge | `src/components/wordlists/WordlistBadge.tsx` | Shows active list name on dashboard |
+| WordlistSelector | `packages/frontend/src/components/wordlists/WordlistSelector.tsx` | Card grid to browse & select active list |
+| WordlistManager | `packages/frontend/src/components/wordlists/WordlistManager.tsx` | Admin/parent view: create, edit, delete lists |
+| ImportModal | `packages/frontend/src/components/wordlists/ImportModal.tsx` | CSV/JSON upload with preview & validation |
+| WordlistBadge | `packages/frontend/src/components/wordlists/WordlistBadge.tsx` | Shows active list name on dashboard |
 
 ### Dashboard Changes
 
@@ -220,43 +220,43 @@ interface WordlistWord {
 ### Phase 1: Backend — Database & API
 
 **Files to create:**
-- `backend/src/migrations/009_add_wordlists.ts` — Schema + seed existing words
-- `backend/src/repositories/wordlistRepository.ts` — CRUD operations
-- `backend/src/routes/wordlists.ts` — All wordlist endpoints
-- `backend/src/middleware/validate.ts` — Add wordlist validation schemas
+- `packages/backend/src/migrations/009_add_wordlists.ts` — Schema + seed existing words
+- `packages/backend/src/repositories/wordlistRepository.ts` — CRUD operations
+- `packages/backend/src/routes/wordlists.ts` — All wordlist endpoints
+- `packages/backend/src/middleware/validate.ts` — Add wordlist validation schemas
 
 **Files to modify:**
-- `backend/src/migrations/index.ts` — Register migration 009
-- `backend/src/types/index.ts` — Add Wordlist types
-- `backend/src/routes/index.ts` — Mount wordlist routes
+- `packages/backend/src/migrations/index.ts` — Register migration 009
+- `packages/backend/src/types/index.ts` — Add Wordlist types
+- `packages/backend/src/routes/index.ts` — Mount wordlist routes
 
 ### Phase 2: Frontend — Types, API, Context
 
 **Files to create:**
-- `src/types/wordlist.ts` — Wordlist and WordlistWord interfaces
+- `packages/frontend/src/types/wordlist.ts` — Wordlist and WordlistWord interfaces
 
 **Files to modify:**
-- `src/services/ApiService.ts` — Add wordlist API methods
-- `src/contexts/AppContext.tsx` — Replace `/words.json` fetch with active wordlist API
-- `src/types/vocabulary.ts` — Ensure VocabularyWord maps from WordlistWord
+- `packages/frontend/src/services/ApiService.ts` — Add wordlist API methods
+- `packages/frontend/src/contexts/AppContext.tsx` — Replace `/words.json` fetch with active wordlist API
+- `packages/frontend/src/types/vocabulary.ts` — Ensure VocabularyWord maps from WordlistWord
 
 ### Phase 3: Frontend — UI Components
 
 **Files to create:**
-- `src/components/wordlists/WordlistSelector.tsx`
-- `src/components/wordlists/WordlistManager.tsx`
-- `src/components/wordlists/ImportModal.tsx`
-- `src/components/wordlists/WordlistBadge.tsx`
-- `src/components/wordlists/index.ts`
+- `packages/frontend/src/components/wordlists/WordlistSelector.tsx`
+- `packages/frontend/src/components/wordlists/WordlistManager.tsx`
+- `packages/frontend/src/components/wordlists/ImportModal.tsx`
+- `packages/frontend/src/components/wordlists/WordlistBadge.tsx`
+- `packages/frontend/src/components/wordlists/index.ts`
 
 **Files to modify:**
-- `src/components/dashboard/Dashboard.tsx` — Add WordlistBadge + selector trigger
-- `src/components/admin/AdminPanel.tsx` — Add "Manage Wordlists" section
-- `src/components/parent/ParentDashboard.tsx` — Add wordlist management
-- `src/routes/index.tsx` — Add wordlist routes
-- `src/services/QuizGenerator.ts` — Add guards for small/incomplete lists
-- `src/components/quiz/QuizSetup.tsx` — Disable quiz if <4 words
-- `src/components/challenge/DailyChallenge.tsx` — Disable challenge if <4 words
+- `packages/frontend/src/components/dashboard/Dashboard.tsx` — Add WordlistBadge + selector trigger
+- `packages/frontend/src/components/admin/AdminPanel.tsx` — Add "Manage Wordlists" section
+- `packages/frontend/src/components/parent/ParentDashboard.tsx` — Add wordlist management
+- `packages/frontend/src/routes/index.tsx` — Add wordlist routes
+- `packages/frontend/src/services/QuizGenerator.ts` — Add guards for small/incomplete lists
+- `packages/frontend/src/components/quiz/QuizSetup.tsx` — Disable quiz if <4 words
+- `packages/frontend/src/components/challenge/DailyChallenge.tsx` — Disable challenge if <4 words
 
 ### Phase 4: CSV Import (sequential, after Phase 1)
 
@@ -321,8 +321,8 @@ interface WordlistWord {
 
 Since the app now has i18n support, all new wordlist UI strings need translation files:
 
-- `src/i18n/locales/en/wordlists.json` + `src/i18n/locales/zh-CN/wordlists.json`
-- Register namespace in `src/i18n/index.ts`
+- `packages/frontend/src/i18n/locales/en/wordlists.json` + `packages/frontend/src/i18n/locales/zh-CN/wordlists.json`
+- Register namespace in `packages/frontend/src/i18n/index.ts`
 - ~30 keys: list names, import labels, error messages, badges, confirmation dialogs
 
 ---
@@ -340,7 +340,7 @@ Since the app now has i18n support, all new wordlist UI strings need translation
 
 ## Verification
 
-1. `cd vocab-master/backend && npx tsx src/index.ts` — migration runs, seeds 1,832 words
+1. `cd packages/backend && npx tsx src/index.ts` — migration runs, seeds 1,832 words
 2. `curl /api/wordlists` — returns system wordlist
 3. `curl /api/wordlists/active` — returns words for current user
 4. `npm run dev` — app loads with wordlist from API (not static JSON)

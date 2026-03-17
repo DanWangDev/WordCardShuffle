@@ -49,19 +49,19 @@ These controls were in place before the audit and required no changes:
 - **Risk:** JWT secret, API keys, OAuth secrets, and database file were tracked in git
 - **Fixed:**
   - Updated `.gitignore` to exclude `.env.*`, `backend/data/`
-  - Removed `vocab-master/backend/data/vocab-master.db` from git tracking
+  - Removed `packages/backend/data/vocab-master.db` from git tracking
 - **TODO:** Rotate all secrets (JWT, Resend API key, Google OAuth, Turnstile), scrub git history with BFG Repo Cleaner, change admin password from default
 
 #### C2. JWT Secret Has Unsafe Fallback
 - **Status:** Fixed
-- **File:** `backend/src/services/authService.ts`
+- **File:** `packages/backend/src/services/authService.ts`
 - **Before:** `const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production'`
 - **After:** App throws `FATAL` error on startup if `JWT_SECRET` is not set or equals the insecure default
 - **Impact:** Eliminates the risk of forged JWTs in production
 
 #### C3. Missing Authorization on Admin Endpoints
 - **Status:** Fixed
-- **File:** `backend/src/routes/admin.ts`
+- **File:** `packages/backend/src/routes/admin.ts`
 - **Before:** Three endpoints were accessible to any authenticated user:
   - `PATCH /admin/users/:id/role` — privilege escalation to admin
   - `PATCH /admin/users/:id/parent` — reassign students
@@ -80,14 +80,14 @@ These controls were in place before the audit and required no changes:
 
 #### H1. IDOR — Wordlist Access
 - **Status:** Fixed
-- **File:** `backend/src/routes/wordlists.ts`
+- **File:** `packages/backend/src/routes/wordlists.ts`
 - **Before:** `GET /:id` and `GET /:id/words` returned any wordlist without ownership check
 - **After:** Private wordlists return 403 unless the requester is the owner or an admin
 - **Impact:** Prevents users from reading other users' private wordlists
 
 #### H2. CORS Misconfiguration
 - **Status:** Fixed
-- **File:** `backend/src/index.ts`
+- **File:** `packages/backend/src/index.ts`
 - **Before:** Fallback to `localhost` origins in all environments
 - **After:** App throws `FATAL` error if `CORS_ORIGIN` is not set in production
 - **Impact:** Prevents accidental open CORS in production
@@ -104,7 +104,7 @@ These controls were in place before the audit and required no changes:
 
 #### H5. Turnstile Bot Protection Bypass
 - **Status:** Fixed
-- **File:** `backend/src/middleware/turnstile.ts`
+- **File:** `packages/backend/src/middleware/turnstile.ts`
 - **Before:** Any client sending `X-Client-Platform: mobile` header bypassed Turnstile entirely
 - **After:**
   - Header-based bypass removed
@@ -114,7 +114,7 @@ These controls were in place before the audit and required no changes:
 
 #### H7. Parent Authorization Null Check
 - **Status:** Fixed
-- **File:** `backend/src/services/authService.ts`
+- **File:** `packages/backend/src/services/authService.ts`
 - **Before:** `targetUser.parent_id !== requesterId` passed when `parent_id` was NULL (unlinked students)
 - **After:** Added explicit `!targetUser.parent_id` guard
 - **Impact:** Parents can no longer reset passwords for unlinked students
@@ -123,44 +123,44 @@ These controls were in place before the audit and required no changes:
 
 #### M1. Weak Password Policy
 - **Status:** Fixed
-- **Files:** `backend/src/services/authService.ts`
+- **Files:** `packages/backend/src/services/authService.ts`
 - **Before:** 6-character minimum
 - **After:** 8-character minimum across all registration, password reset, and admin reset paths
 
 #### M2. Email Enumeration via Timing
 - **Status:** Fixed
-- **File:** `backend/src/services/authService.ts`
+- **File:** `packages/backend/src/services/authService.ts`
 - **Before:** Artificial delay only on user-not-found path — measurable timing difference
 - **After:** All paths through `requestPasswordReset()` enforce a minimum 250ms response time with random jitter via `try/finally`
 
 #### M7. Missing Rate Limit on Reset Token Validation
 - **Status:** Fixed
-- **File:** `backend/src/index.ts`
+- **File:** `packages/backend/src/index.ts`
 - **Before:** `GET /validate-reset-token/:token` had no rate limit
 - **After:** Limited to 10 requests per 15 minutes per IP
 
 #### M8. Quiz Results Not Validated
 - **Status:** Fixed
-- **File:** `backend/src/routes/quizResults.ts`
+- **File:** `packages/backend/src/routes/quizResults.ts`
 - **Before:** `POST /api/quiz-results` accepted any body without validation
 - **After:** Zod schema validates all fields including nested answer objects, with `correctAnswers <= totalQuestions` refinement
 
 #### M9. Wordlist Upload Missing File Type Validation
 - **Status:** Fixed
-- **File:** `backend/src/routes/wordlists.ts`
+- **File:** `packages/backend/src/routes/wordlists.ts`
 - **Before:** Accepted any MIME type
 - **After:** Restricted to `text/csv`, `application/json`, `text/plain` or `.csv`/`.json`/`.txt` extensions
 
 #### M3. Refresh Tokens Not Hashed in DB
 - **Status:** Fixed
-- **File:** `backend/src/repositories/tokenRepository.ts`
+- **File:** `packages/backend/src/repositories/tokenRepository.ts`
 - **Before:** Raw 128-char hex tokens stored in plaintext
 - **After:** All tokens hashed with SHA-256 before storage; lookups and deletions hash the raw token before querying
 - **Impact:** Database leak no longer exposes active session tokens
 
 #### H6. Tokens Stored in localStorage (XSS Risk)
 - **Status:** Fixed
-- **Files:** `backend/src/routes/auth.ts`, `backend/src/index.ts`, `src/services/ApiService.ts`
+- **Files:** `packages/backend/src/routes/auth.ts`, `packages/backend/src/index.ts`, `packages/frontend/src/services/ApiService.ts`
 - **Before:** Both access and refresh tokens stored in localStorage, vulnerable to XSS
 - **After:**
   - Refresh token set as `httpOnly`, `secure`, `sameSite=strict` cookie scoped to `/api/auth`
@@ -171,14 +171,14 @@ These controls were in place before the audit and required no changes:
 
 #### M4. Google Account Auto-Linking Without Consent
 - **Status:** Fixed
-- **Files:** `backend/src/services/authService.ts`, `backend/src/routes/auth.ts`, `backend/src/middleware/validate.ts`
+- **Files:** `packages/backend/src/services/authService.ts`, `packages/backend/src/routes/auth.ts`, `packages/backend/src/middleware/validate.ts`
 - **Before:** Auto-linked Google account to existing email without user consent
 - **After:** Returns `{ linkPending: true, email }` response; client must re-send with `confirmLink: true` to proceed
 - **Impact:** Users must explicitly confirm before their accounts are linked
 
 #### M5. No Audit Logging
 - **Status:** Fixed
-- **Files:** `backend/src/services/auditService.ts`, `backend/src/services/logger.ts`, `backend/src/migrations/013_add_audit_log.ts`, `backend/src/routes/admin.ts`
+- **Files:** `packages/backend/src/services/auditService.ts`, `packages/backend/src/services/logger.ts`, `packages/backend/src/migrations/013_add_audit_log.ts`, `packages/backend/src/routes/admin.ts`
 - **Before:** No log trail for admin actions
 - **After:**
   - New `audit_log` table with indexed columns (action, actor_id, created_at)
