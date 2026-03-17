@@ -8,8 +8,8 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 
 ### Learning
 - **Flashcard Study** — swipe-through word cards with definitions, synonyms, and example sentences
-- **Quiz Mode** — multiple-choice and matching quizzes with accuracy tracking
-- **Daily Challenges** — one scored challenge per day with streaks and leaderboards
+- **Quiz Mode** — multiple-choice and matching quizzes with accuracy tracking; achievement unlock toasts on completion
+- **Daily Challenges** — one scored challenge per day with streaks and leaderboards; achievement unlock toasts on completion
 - **Custom Wordlists** — create, import (CSV), and manage personal word collections; set an active wordlist per user
 - **Weak Word Tracking** — automatically identifies words the student gets wrong most often
 
@@ -80,7 +80,7 @@ WordCardShffle/                  # Repository root
 │   ├── frontend/                # React SPA (Vite, Tailwind, i18n)
 │   │   ├── src/
 │   │   │   ├── components/      # UI components by domain
-│   │   │   ├── contexts/        # AuthContext, NotificationContext
+│   │   │   ├── contexts/        # AuthContext, NotificationContext, AchievementContext
 │   │   │   ├── i18n/            # i18next config and locale files (en, zh-CN)
 │   │   │   └── services/        # ApiService, StorageService
 │   │   └── package.json

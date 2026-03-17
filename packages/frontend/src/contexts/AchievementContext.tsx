@@ -1,40 +1,37 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { AchievementUnlockedToast } from '../components/achievements/AchievementUnlockedToast';
+import { AchievementContext } from './achievementContextDef';
 import type { NewlyEarnedAchievement } from '../services/api/achievementApi';
 
-interface AchievementContextValue {
-  showAchievements: (achievements: NewlyEarnedAchievement[]) => void;
-}
-
-const AchievementContext = createContext<AchievementContextValue | null>(null);
-
-export function useAchievements() {
-  const ctx = useContext(AchievementContext);
-  if (!ctx) {
-    throw new Error('useAchievements must be used within AchievementProvider');
-  }
-  return ctx;
-}
-
 export function AchievementProvider({ children }: { children: React.ReactNode }) {
-  const [queue, setQueue] = useState<NewlyEarnedAchievement[]>([]);
   const [current, setCurrent] = useState<NewlyEarnedAchievement | null>(null);
+  const queueRef = useRef<NewlyEarnedAchievement[]>([]);
+
+  const showNext = useCallback(() => {
+    if (queueRef.current.length > 0) {
+      const [next, ...rest] = queueRef.current;
+      queueRef.current = rest;
+      setCurrent(next);
+    } else {
+      setCurrent(null);
+    }
+  }, []);
 
   const showAchievements = useCallback((achievements: NewlyEarnedAchievement[]) => {
     if (achievements.length === 0) return;
-    setQueue(prev => [...prev, ...achievements]);
+    queueRef.current = [...queueRef.current, ...achievements];
+    // Only kick off display if nothing is currently showing
+    setCurrent(prev => {
+      if (prev) return prev;
+      const [next, ...rest] = queueRef.current;
+      queueRef.current = rest;
+      return next;
+    });
   }, []);
 
   const handleClose = useCallback(() => {
-    setCurrent(null);
-  }, []);
-
-  useEffect(() => {
-    if (!current && queue.length > 0) {
-      setCurrent(queue[0]);
-      setQueue(prev => prev.slice(1));
-    }
-  }, [current, queue]);
+    showNext();
+  }, [showNext]);
 
   return (
     <AchievementContext.Provider value={{ showAchievements }}>

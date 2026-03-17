@@ -13,7 +13,7 @@ import { StreakMilestone } from './StreakMilestone';
 import { useApp } from '../../contexts/AppContext';
 import { useTimer } from '../../hooks/useTimer';
 import { useAudio } from '../../hooks/useAudio';
-import { useAchievements } from '../../contexts/AchievementContext';
+import { useAchievements } from '../../hooks/useAchievements';
 import type { DailyChallengeState, AnswerRecord } from '../../types';
 import { generateDailyChallengeQuestions } from '../../services/QuizGenerator';
 import { StorageService } from '../../services/StorageService';
@@ -211,7 +211,7 @@ export function DailyChallenge() {
         status: 'active',
       };
     });
-  }, [playClick, playComplete]);
+  }, [playClick, playComplete, showAchievements]);
 
   // Handle back to home
   const handleHome = async () => {
