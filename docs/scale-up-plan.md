@@ -128,7 +128,7 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 ### Deferred Items
 
 - `StreakDisplay.tsx` flame animation and 90-day calendar heatmap — deferred to Phase 4 (Analytics)
-- Achievement unlock toast context provider (global) — toast component exists, context wiring deferred
+- ~~Achievement unlock toast context provider (global) — toast component exists, context wiring deferred~~ **DONE** (March 2026) — `AchievementContext` + `useAchievements` hook added; `QuizMode` and `DailyChallenge` now surface `newAchievements` from API response as sequential golden toasts
 
 ---
 
@@ -325,6 +325,8 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 
 - **Code splitting:** All route components lazy-loaded with `React.lazy()` + `Suspense` (already in place since Phase 1)
 - **Error boundaries:** `common/ErrorBoundary.tsx` with retry button, wrapping `RootLayout` Outlet
+- **Mobile responsive fixes** (March 2026): Dashboard stats/compact card grids responsive (`grid-cols-2 sm:grid-cols-4`), PvP tabs truncated with hidden icons on mobile, flashcard height viewport-aware (`min(400px, 60vh)`), report charts stacked on mobile, reports page bottom padding
+- **Achievement unlock toast wiring** (March 2026): `AchievementContext` with sequential queue, `useAchievements` hook, wired into `QuizMode` and `DailyChallenge` to show golden slide-in toasts from `AchievementUnlockedToast` when backend returns `newAchievements`
 - **Offline handling / backup improvements:** Deferred — current NAS setup with existing backup script is sufficient for ~50 users
 
 ---

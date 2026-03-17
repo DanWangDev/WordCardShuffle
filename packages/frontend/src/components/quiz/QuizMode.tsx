@@ -14,7 +14,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useQuiz } from '../../hooks/useQuiz';
 import { useTimer } from '../../hooks/useTimer';
 import { useAudio } from '../../hooks/useAudio';
-import { useAchievements } from '../../contexts/AchievementContext';
+import { useAchievements } from '../../hooks/useAchievements';
 import type { QuizConfig } from '../../types';
 
 export function QuizMode() {

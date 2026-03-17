@@ -15,7 +15,7 @@ WordCardShffle/
 │   ├── frontend/            # React SPA (Vite, Tailwind, i18n)  [@vocab-master/frontend]
 │   │   ├── src/
 │   │   │   ├── components/  # UI components organised by domain
-│   │   │   ├── contexts/    # React contexts (Auth, Notification, App)
+│   │   │   ├── contexts/    # React contexts (Auth, Notification, App, Achievement)
 │   │   │   ├── hooks/       # Custom React hooks
 │   │   │   ├── i18n/        # i18next config and locale files (en, zh-CN)
 │   │   │   ├── routes/      # react-router-dom route definitions
