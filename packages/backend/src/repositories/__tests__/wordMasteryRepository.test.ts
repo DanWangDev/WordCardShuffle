@@ -57,6 +57,21 @@ describe('SqliteWordMasteryRepository', () => {
     });
   });
 
+  describe('createInitial', () => {
+    it('creates a neutral mastery record with no answers recorded', () => {
+      repo.createInitial(userId, 'apple');
+
+      const rows = repo.getByUserId(userId);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].word).toBe('apple');
+      expect(rows[0].correct_count).toBe(0);
+      expect(rows[0].incorrect_count).toBe(0);
+      expect(rows[0].mastery_level).toBe(0);
+      expect(rows[0].srs_interval_days).toBe(0);
+      expect(rows[0].srs_ease_factor).toBe(2.5);
+    });
+  });
+
   describe('getBreakdown', () => {
     it('returns zero counts for user with no data', () => {
       const breakdown = repo.getBreakdown(userId);

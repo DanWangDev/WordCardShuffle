@@ -67,6 +67,18 @@ export class SqliteWordMasteryRepository implements IWordMasteryRepository {
     }
   }
 
+  createInitial(userId: number, word: string, wordlistId?: number): void {
+    const now = new Date().toISOString();
+
+    this.db.prepare(`
+      INSERT INTO word_mastery (
+        user_id, word, wordlist_id, correct_count, incorrect_count,
+        last_correct_at, last_incorrect_at, mastery_level, created_at, updated_at,
+        next_review_at, srs_interval_days, srs_ease_factor
+      ) VALUES (?, ?, ?, 0, 0, NULL, NULL, 0, ?, ?, NULL, 0, 2.5)
+    `).run(userId, word, wordlistId ?? null, now, now);
+  }
+
   getByUserId(userId: number): WordMasteryRow[] {
     return this.db.prepare(
       'SELECT * FROM word_mastery WHERE user_id = ? ORDER BY updated_at DESC'

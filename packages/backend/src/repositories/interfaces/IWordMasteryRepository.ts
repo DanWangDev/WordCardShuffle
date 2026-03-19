@@ -9,6 +9,7 @@ export interface SrsScheduleUpdate {
 
 export interface IWordMasteryRepository {
   upsertFromAnswer(userId: number, word: string, isCorrect: boolean, wordlistId?: number): void;
+  createInitial(userId: number, word: string, wordlistId?: number): void;
   getByUserId(userId: number): WordMasteryRow[];
   getBreakdown(userId: number): MasteryBreakdown;
   getWeakWords(userId: number, limit?: number): WordMasterySummary[];

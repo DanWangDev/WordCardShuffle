@@ -74,17 +74,30 @@ router.get('/review-queue', (req: AuthRequest, res: Response) => {
 });
 
 const reviewSchema = z.object({
-  wordMasteryId: z.number().int().positive(),
+  wordMasteryId: z.number().int(),
   quality: z.number().int().min(0).max(5),
+  word: z.string().optional(),
+  wordlistId: z.number().int().positive().optional(),
 });
 
 // POST /api/srs/review
 router.post('/review', validate(reviewSchema), (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const { wordMasteryId, quality } = req.body;
+    const { wordMasteryId, quality, word, wordlistId } = req.body;
 
-    const result = srsService.processReview(userId, wordMasteryId, quality);
+    // New card (negative ID from fallback): initialize mastery record first
+    let resolvedId = wordMasteryId;
+    if (wordMasteryId < 0 && word) {
+      const initialized = srsService.initializeWord(
+        userId,
+        word,
+        wordlistId ?? undefined,
+      );
+      resolvedId = initialized.id;
+    }
+
+    const result = srsService.processReview(userId, resolvedId, quality);
     res.json({ success: true, ...result });
   } catch (error) {
     res.status(500).json({
