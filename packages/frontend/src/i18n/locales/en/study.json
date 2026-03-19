@@ -19,6 +19,5 @@
   "clickToFlip": "Click card to flip",
   "clickToFlipBack": "Click card to flip back",
   "showWord": "Show word",
-  "showDefinition": "Show definition",
-  "saveError": "Your study progress couldn't be saved this time. Keep studying — it'll save next time!"
+  "showDefinition": "Show definition"
 }
