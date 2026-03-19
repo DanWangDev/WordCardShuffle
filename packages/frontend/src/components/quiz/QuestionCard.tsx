@@ -71,7 +71,9 @@ export function QuestionCard({
           <p className="text-lg sm:text-xl text-primary-900 font-semibold leading-relaxed">
             {question.prompt}
           </p>
-          <PronunciationButton word={question.word.targetWord} size="sm" />
+          {showResult && (
+            <PronunciationButton word={question.word.targetWord} size="sm" />
+          )}
         </div>
       </div>
 
