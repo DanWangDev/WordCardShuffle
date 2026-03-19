@@ -156,8 +156,8 @@ export const srsService = {
     const existing = wordMasteryRepository.findByUserAndWord(userId, word);
     if (existing) return existing;
 
-    // Create a new record via upsert with a neutral answer
-    wordMasteryRepository.upsertFromAnswer(userId, word, true, wordlistId);
+    // Create a neutral record so the first actual review determines the counts.
+    wordMasteryRepository.createInitial(userId, word, wordlistId);
 
     const created = wordMasteryRepository.findByUserAndWord(userId, word);
     if (!created) throw new Error('Failed to initialize word mastery');
