@@ -112,12 +112,17 @@ export const exerciseService = {
 
       if (!Array.isArray(sentences) || sentences.length === 0) continue;
 
-      const sentence = sentences[Math.floor(Math.random() * sentences.length)];
-      if (!sentence || sentence.trim().length === 0) continue;
+      // Filter to age-appropriate sentences (4-12 tokens, no citations)
+      const suitable = sentences.filter(s => {
+        if (!s || s.trim().length === 0) return false;
+        if (s.includes('\u2014')) return false; // em dash = citation
+        const tokenCount = s.split(/\s+/).filter(t => t.length > 0).length;
+        return tokenCount >= 4 && tokenCount <= 12;
+      });
+      if (suitable.length === 0) continue;
 
-      // Tokenize: split on whitespace, preserve punctuation attached to words
+      const sentence = suitable[Math.floor(Math.random() * suitable.length)];
       const tokens = sentence.split(/\s+/).filter(t => t.length > 0);
-      if (tokens.length < 3) continue; // Too short to be interesting
 
       exercises.push({
         word: row.target_word,
@@ -169,8 +174,16 @@ export const exerciseService = {
 
         if (!Array.isArray(sentences) || sentences.length === 0) continue;
 
-        const sentence = sentences[Math.floor(Math.random() * sentences.length)];
-        if (!sentence) continue;
+        // Filter to age-appropriate sentences (4-12 tokens, no citations)
+        const suitable = sentences.filter(s => {
+          if (!s) return false;
+          if (s.includes('\u2014')) return false;
+          const tokenCount = s.split(/\s+/).filter(t => t.length > 0).length;
+          return tokenCount >= 4 && tokenCount <= 12;
+        });
+        if (suitable.length === 0) continue;
+
+        const sentence = suitable[Math.floor(Math.random() * suitable.length)];
 
         // Create blanked sentence by replacing the target word with underscores
         const wordRegex = new RegExp(`\\b${row.target_word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
