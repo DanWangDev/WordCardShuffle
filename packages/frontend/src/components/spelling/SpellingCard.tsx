@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Check, X } from 'lucide-react';
+import { PronunciationButton } from '../common/PronunciationButton';
+import { useSpeechSynthesis } from '../../hooks/useSpeechSynthesis';
 
 interface SpellingExercise {
   word: string;
@@ -25,11 +27,16 @@ export function SpellingCard({ exercise, mode, onResult }: SpellingCardProps) {
   const [retryMode, setRetryMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef(Date.now());
+  const { speak } = useSpeechSynthesis();
 
   useEffect(() => {
     startTimeRef.current = Date.now();
     inputRef.current?.focus();
-  }, []);
+    // Auto-play pronunciation in definition mode
+    if (mode === 'definition') {
+      speak(exercise.word);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (retryMode) {
@@ -88,6 +95,10 @@ export function SpellingCard({ exercise, mode, onResult }: SpellingCardProps) {
           <>
             <p className="text-sm text-gray-500 mb-2">{t('spellTheWord')}</p>
             <p className="text-lg text-gray-800 font-medium leading-relaxed">{exercise.definition}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <PronunciationButton word={exercise.word} size="md" />
+              <span className="text-sm text-gray-500">{t('hearTheWord')}</span>
+            </div>
           </>
         ) : (
           <>
