@@ -12,13 +12,15 @@ A full-stack vocabulary learning application for children preparing for the 11+ 
 - **Daily Challenges** — one scored challenge per day with streaks and leaderboards; achievement unlock toasts on completion
 - **Custom Wordlists** — create, import (CSV), and manage personal word collections; set an active wordlist per user
 - **Weak Word Tracking** — automatically identifies words the student gets wrong most often
-- **Achievements** — 15 achievements across 5 categories, unlock conditions, toast notifications on quiz/challenge completion
+- **Spelling Exercises** — two modes: definition prompt and fill-in-the-blank; forced retry on mistakes for muscle memory reinforcement
+- **Timed Challenge Mode** — exam simulation with per-question countdown (easy/medium/hard difficulty); auto-advance on timeout
+- **Achievements** — 22 achievements across 5 categories, unlock conditions, toast notifications on quiz/challenge/exercise completion
 - **Leaderboards** — weekly/monthly/alltime periods, scoring formula (`quizzes * avg_score * 0.5 + words * 2 + streak * 10`)
 - **Groups/Classes** — creation, 6-char join codes, member roles (owner/admin/member), group wordlists
 - **Analytics & Reports** — word mastery levels (new/learning/familiar/mastered), learning trends, CSV export
 - **SRS Flashcards** — SM-2 spaced repetition, review queue, pronunciation button, swipe gestures
 - **Sentence Building** — tap-to-place token exercises generated from example sentences
-- **PvP Challenges** — head-to-head quizzes, matchmaking, turn-based play, results comparison
+- **PvP Challenges** — head-to-head quizzes, matchmaking, turn-based play, persisted questions for fairness, results comparison, rematch support
 
 ### Accounts & Roles
 - **Student accounts** — simple signup (no email required)
@@ -245,13 +247,15 @@ See [docs/repo-structure.md](./repo-structure.md) for full details.
 ### Exercises (`/api/exercises`)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/exercises/sentence-build?wordlistId=&limit=` | Yes | Get sentence building exercises |
+| GET | `/api/exercises/sentence-build?wordlistId=&limit=` | Yes | Get sentence building exercises (wordlistId optional — falls back to active wordlist) |
+| GET | `/api/exercises/spelling?wordlistId=&mode=&limit=` | Yes | Get spelling exercises (mode: `definition` or `fill_blank`) |
+| POST | `/api/exercises/results` | Yes | Submit exercise results (sentence_build or spelling) |
 
 ### PvP (`/api/pvp`)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/pvp/opponents?q=` | Yes | Search for opponents by username |
-| POST | `/api/pvp/challenge` | Yes | Create a new PvP challenge |
+| POST | `/api/pvp/challenge` | Yes | Create a new PvP challenge (persists questions) |
 | GET | `/api/pvp/pending` | Yes | Get pending challenges |
 | GET | `/api/pvp/active` | Yes | Get active challenges |
 | GET | `/api/pvp/history?limit=` | Yes | Get challenge history |
@@ -260,6 +264,8 @@ See [docs/repo-structure.md](./repo-structure.md) for full details.
 | POST | `/api/pvp/:id/accept` | Yes | Accept a challenge |
 | POST | `/api/pvp/:id/decline` | Yes | Decline a challenge |
 | POST | `/api/pvp/:id/submit` | Yes | Submit answers for a challenge |
+| POST | `/api/pvp/:id/rematch` | Yes | Create a rematch challenge |
+| GET | `/api/pvp/:id/comparison` | Yes | Get per-question comparison for both players |
 
 ## Getting Started
 
@@ -331,9 +337,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for NAS deployment instructions.
 
 ## Database
 
-SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `013`) and tracked in a `migrations` table.
+SQLite with auto-running migrations on server start. Migrations are numbered sequentially (`001` through `023`) and tracked in a `migrations` table.
 
-Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`, `audit_log`.
+Key tables: `users`, `user_settings`, `user_stats`, `refresh_tokens`, `password_reset_tokens`, `daily_challenges`, `quiz_results`, `quiz_answers`, `study_sessions`, `user_vocabulary`, `notifications`, `link_requests`, `wordlists`, `wordlist_words`, `user_active_wordlist`, `push_tokens`, `audit_log`, `achievements`, `user_achievements`, `leaderboard_entries`, `groups`, `group_members`, `group_wordlists`, `word_mastery`, `pvp_challenges`, `pvp_answers`, `pvp_questions`, `exercise_results`, `exercise_answers`.
 
 ## License
 

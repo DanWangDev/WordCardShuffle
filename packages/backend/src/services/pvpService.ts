@@ -1,5 +1,7 @@
 import { pvpRepository, wordlistRepository, notificationRepository, userRepository } from '../repositories/index.js';
 import { checkAndAwardAchievements } from './achievementService.js';
+import { wordMasteryService } from './wordMasteryService.js';
+import { db } from '../config/database.js';
 import type { PvpChallengeWithUsers, WordlistWordRow } from '../types/index.js';
 
 export interface PvpQuestion {
@@ -52,6 +54,43 @@ function generateQuestions(words: WordlistWordRow[], count: number): PvpQuestion
   });
 }
 
+function persistQuestions(challengeId: number, questions: PvpQuestion[]): void {
+  const insert = db.prepare(`
+    INSERT INTO pvp_questions (challenge_id, question_index, word, correct_answer, options)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  const transaction = db.transaction(() => {
+    for (const q of questions) {
+      insert.run(challengeId, q.index, q.word, q.correctAnswer, JSON.stringify(q.options));
+    }
+  });
+
+  transaction();
+}
+
+function loadPersistedQuestions(challengeId: number): PvpQuestion[] | null {
+  const rows = db.prepare(
+    'SELECT * FROM pvp_questions WHERE challenge_id = ? ORDER BY question_index'
+  ).all(challengeId) as Array<{
+    id: number;
+    challenge_id: number;
+    question_index: number;
+    word: string;
+    correct_answer: string;
+    options: string;
+  }>;
+
+  if (rows.length === 0) return null;
+
+  return rows.map(row => ({
+    index: row.question_index,
+    word: row.word,
+    correctAnswer: row.correct_answer,
+    options: JSON.parse(row.options) as string[],
+  }));
+}
+
 export const pvpService = {
   createChallenge(challengerId: number, opponentId: number, wordlistId: number, questionCount = 10) {
     if (challengerId === opponentId) {
@@ -74,6 +113,10 @@ export const pvpService = {
       questionCount,
       expiresAt,
     });
+
+    // Generate and persist questions at creation time for fairness
+    const questions = generateQuestions(words, questionCount);
+    persistQuestions(challenge.id, questions);
 
     // Notify opponent
     notificationRepository.create(
@@ -129,6 +172,11 @@ export const pvpService = {
       throw new Error('Already submitted answers');
     }
 
+    // Load persisted questions (created when challenge was created)
+    const persisted = loadPersistedQuestions(challengeId);
+    if (persisted) return persisted;
+
+    // Fallback for challenges created before this migration
     const words = wordlistRepository.getWords(challenge.wordlist_id);
     return generateQuestions(words, challenge.question_count);
   },
@@ -162,6 +210,13 @@ export const pvpService = {
         timeSpent: answer.timeSpent,
       });
     }
+
+    // Update word mastery from PvP answers
+    wordMasteryService.recordQuizAnswers(
+      userId,
+      answers.map(a => ({ word: a.word, isCorrect: a.isCorrect })),
+      challenge.wordlist_id
+    );
 
     // Calculate score
     const correctCount = answers.filter(a => a.isCorrect).length;
@@ -228,6 +283,79 @@ export const pvpService = {
 
     const resolved = pvpRepository.findById(challenge.id)!;
     return { score: winnerId === challenge.challenger_id ? challenge.challenger_score : challenge.opponent_score, waiting: false, challenge: resolved };
+  },
+
+  createRematch(challengeId: number, userId: number) {
+    const original = pvpRepository.findById(challengeId);
+    if (!original) throw new Error('Challenge not found');
+    if (original.challenger_id !== userId && original.opponent_id !== userId) {
+      throw new Error('Not your challenge');
+    }
+    if (original.status !== 'completed') throw new Error('Challenge is not completed');
+
+    // Swap roles: the one requesting rematch becomes challenger
+    const opponentId = original.challenger_id === userId ? original.opponent_id : original.challenger_id;
+
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    const challenge = pvpRepository.create({
+      challengerId: userId,
+      opponentId,
+      wordlistId: original.wordlist_id,
+      questionCount: original.question_count,
+      expiresAt,
+    });
+
+    // Set rematch_of reference
+    db.prepare('UPDATE pvp_challenges SET rematch_of = ? WHERE id = ?').run(challengeId, challenge.id);
+
+    // Generate and persist new questions
+    const words = wordlistRepository.getWords(original.wordlist_id);
+    const questions = generateQuestions(words, original.question_count);
+    persistQuestions(challenge.id, questions);
+
+    // Notify opponent
+    notificationRepository.create(
+      opponentId,
+      'achievement',
+      'Rematch Challenge!',
+      `${userId === original.challenger_id ? (original.challenger_display_name || original.challenger_username) : (original.opponent_display_name || original.opponent_username)} wants a rematch!`,
+      { challengeId: challenge.id, type: 'pvp_rematch' }
+    );
+
+    return pvpRepository.findById(challenge.id)!;
+  },
+
+  getQuestionComparison(challengeId: number, userId: number) {
+    const challenge = pvpRepository.findById(challengeId);
+    if (!challenge) throw new Error('Challenge not found');
+    if (challenge.challenger_id !== userId && challenge.opponent_id !== userId) {
+      throw new Error('Not your challenge');
+    }
+    if (challenge.status !== 'completed') throw new Error('Challenge is not completed');
+
+    const challengerAnswers = pvpRepository.getAnswers(challengeId, challenge.challenger_id);
+    const opponentAnswers = pvpRepository.getAnswers(challengeId, challenge.opponent_id);
+
+    const questions = loadPersistedQuestions(challengeId) || [];
+
+    return {
+      questions,
+      challengerAnswers,
+      opponentAnswers,
+      challenger: {
+        id: challenge.challenger_id,
+        username: challenge.challenger_username,
+        displayName: challenge.challenger_display_name,
+        score: challenge.challenger_score,
+      },
+      opponent: {
+        id: challenge.opponent_id,
+        username: challenge.opponent_username,
+        displayName: challenge.opponent_display_name,
+        score: challenge.opponent_score,
+      },
+    };
   },
 
   getPending(userId: number): PvpChallengeWithUsers[] {

@@ -42,6 +42,8 @@ const CreateGroupPage = lazy(() => lazyWithRetry(() => import('../components/gro
 const ReportsPage = lazy(() => lazyWithRetry(() => import('../components/reports/ReportsPage')).then(m => ({ default: m.ReportsPage })));
 const FlashcardSession = lazy(() => lazyWithRetry(() => import('../components/flashcard/FlashcardSession')).then(m => ({ default: m.FlashcardSession })));
 const SentenceBuildSession = lazy(() => lazyWithRetry(() => import('../components/exercises/SentenceBuildSession')).then(m => ({ default: m.SentenceBuildSession })));
+const SpellingSession = lazy(() => lazyWithRetry(() => import('../components/spelling/SpellingSession')).then(m => ({ default: m.SpellingSession })));
+const TimedQuizMode = lazy(() => lazyWithRetry(() => import('../components/quiz/TimedQuizMode')).then(m => ({ default: m.TimedQuizMode })));
 const ChallengeList = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeList')).then(m => ({ default: m.ChallengeList })));
 const ChallengeQuiz = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeQuiz')).then(m => ({ default: m.ChallengeQuiz })));
 const ChallengeResults = lazy(() => lazyWithRetry(() => import('../components/pvp/ChallengeResults')).then(m => ({ default: m.ChallengeResults })));
@@ -198,6 +200,14 @@ export const router = createBrowserRouter([
               {
                 path: 'exercises/sentence-build',
                 element: withSuspense(SentenceBuildSession),
+              },
+              {
+                path: 'exercises/spelling',
+                element: withSuspense(SpellingSession),
+              },
+              {
+                path: 'quiz/timed',
+                element: withSuspense(TimedQuizMode),
               },
               {
                 path: 'pvp',

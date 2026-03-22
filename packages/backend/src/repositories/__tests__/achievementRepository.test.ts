@@ -6,7 +6,7 @@ describe('SqliteAchievementRepository', () => {
   describe('findAll', () => {
     it('returns all seeded achievements sorted by sort_order', () => {
       const all = achievementRepository.findAll()
-      expect(all.length).toBe(15)
+      expect(all.length).toBe(22)
       expect(all[0].slug).toBe('first_quiz')
       expect(all[0].sort_order).toBeLessThan(all[1].sort_order)
     })

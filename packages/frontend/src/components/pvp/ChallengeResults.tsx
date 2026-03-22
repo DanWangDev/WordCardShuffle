@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { Trophy, Frown, Minus, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, Frown, Minus, Loader2, RotateCcw, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
 import { TopBar } from '../layout/TopBar';
 import { pvpApi } from '../../services/api/pvpApi';
 import { useAuth } from '../../contexts/AuthContext';
 import type { PvpChallenge } from '../../services/api/pvpApi';
+
+interface ComparisonData {
+  questions: Array<{ index: number; word: string; correctAnswer: string; options: string[] }>;
+  challengerAnswers: Array<{ question_index: number; word: string; correct_answer: string; selected_answer: string | null; is_correct: number }>;
+  opponentAnswers: Array<{ question_index: number; word: string; correct_answer: string; selected_answer: string | null; is_correct: number }>;
+  challenger: { id: number; username: string; displayName: string | null; score: number | null };
+  opponent: { id: number; username: string; displayName: string | null; score: number | null };
+}
 
 export function ChallengeResults() {
   const { t } = useTranslation('pvp');
@@ -17,6 +25,10 @@ export function ChallengeResults() {
 
   const [challenge, setChallenge] = useState<PvpChallenge | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparison, setComparison] = useState<ComparisonData | null>(null);
+  const [loadingComparison, setLoadingComparison] = useState(false);
+  const [rematchLoading, setRematchLoading] = useState(false);
 
   useEffect(() => {
     pvpApi.getChallenge(Number(id))
@@ -26,6 +38,36 @@ export function ChallengeResults() {
       })
       .catch(() => setLoading(false));
   }, [id]);
+
+  const handleToggleComparison = async () => {
+    if (showComparison) {
+      setShowComparison(false);
+      return;
+    }
+
+    if (!comparison) {
+      setLoadingComparison(true);
+      try {
+        const data = await pvpApi.getQuestionComparison(Number(id));
+        setComparison(data);
+      } catch {
+        // silently fail
+      } finally {
+        setLoadingComparison(false);
+      }
+    }
+    setShowComparison(true);
+  };
+
+  const handleRematch = async () => {
+    setRematchLoading(true);
+    try {
+      const { challenge: newChallenge } = await pvpApi.createRematch(Number(id));
+      navigate(`/pvp/${newChallenge.id}/play`);
+    } catch {
+      setRematchLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -130,19 +172,106 @@ export function ChallengeResults() {
                 {t('wordlist', { name: challenge.wordlist_name })} · {challenge.question_count} {t('questionCount').toLowerCase()}
               </p>
             </motion.div>
+
+            {/* Question comparison toggle */}
+            {isCompleted && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                onClick={handleToggleComparison}
+                className="w-full mb-4 py-3 rounded-2xl bg-white border-2 border-indigo-200 text-indigo-700 font-bold cursor-pointer hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
+              >
+                {loadingComparison ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : showComparison ? (
+                  <><ChevronUp size={16} />{t('hideComparison', 'Hide Details')}</>
+                ) : (
+                  <><ChevronDown size={16} />{t('showComparison', 'View Question Details')}</>
+                )}
+              </motion.button>
+            )}
+
+            {/* Question comparison */}
+            <AnimatePresence>
+              {showComparison && comparison && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-3 mb-6"
+                >
+                  {comparison.questions.map((q, i) => {
+                    const iAmChallenger = challenge.challenger_id === userId;
+                    const myAns = iAmChallenger
+                      ? comparison.challengerAnswers.find(a => a.question_index === i)
+                      : comparison.opponentAnswers.find(a => a.question_index === i);
+                    const theirAns = iAmChallenger
+                      ? comparison.opponentAnswers.find(a => a.question_index === i)
+                      : comparison.challengerAnswers.find(a => a.question_index === i);
+
+                    return (
+                      <div key={i} className="bg-white rounded-xl p-4 border border-gray-100">
+                        <p className="text-sm font-bold text-gray-800 mb-2">
+                          {i + 1}. {q.word}
+                        </p>
+                        <p className="text-xs text-gray-500 mb-2">{q.correctAnswer}</p>
+                        <div className="flex gap-4 text-xs">
+                          <div className="flex items-center gap-1">
+                            {myAns?.is_correct ? (
+                              <Check size={14} className="text-green-500" />
+                            ) : (
+                              <X size={14} className="text-red-500" />
+                            )}
+                            <span className="text-gray-600">{t('you')}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {theirAns?.is_correct ? (
+                              <Check size={14} className="text-green-500" />
+                            ) : (
+                              <X size={14} className="text-red-500" />
+                            )}
+                            <span className="text-gray-600">{opponentName}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         )}
 
-        {/* Back button */}
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          onClick={() => navigate('/pvp')}
-          className="w-full py-3 rounded-2xl bg-white border-2 border-gray-200 text-gray-700 font-bold cursor-pointer hover:bg-gray-50 transition-colors"
-        >
-          {t('backToList')}
-        </motion.button>
+        {/* Action buttons */}
+        <div className="space-y-3">
+          {isCompleted && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              onClick={handleRematch}
+              disabled={rematchLoading}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold cursor-pointer hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {rematchLoading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <><RotateCcw size={16} />{t('rematch', 'Rematch')}</>
+              )}
+            </motion.button>
+          )}
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.45 }}
+            onClick={() => navigate('/pvp')}
+            className="w-full py-3 rounded-2xl bg-white border-2 border-gray-200 text-gray-700 font-bold cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            {t('backToList')}
+          </motion.button>
+        </div>
       </main>
     </div>
   );

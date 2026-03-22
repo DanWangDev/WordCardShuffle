@@ -48,5 +48,8 @@
   "wordlist": "词表：{{name}}",
   "loadError": "无法加载挑战列表。点击重试！",
   "acceptError": "无法接受挑战，请再试一次！",
-  "declineError": "无法拒绝挑战，请再试一次！"
+  "declineError": "无法拒绝挑战，请再试一次！",
+  "rematch": "再来一局",
+  "showComparison": "查看题目详情",
+  "hideComparison": "隐藏详情"
 }

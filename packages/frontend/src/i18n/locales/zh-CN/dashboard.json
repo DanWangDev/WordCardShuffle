@@ -32,6 +32,10 @@
   "flashcardsDesc": "间隔重复复习",
   "sentenceBuild": "造句",
   "sentenceBuildDesc": "用单词组成句子",
+  "spelling": "拼写",
+  "spellingDesc": "练习正确拼写单词",
+  "timedChallenge": "限时",
+  "timedChallengeDesc": "模拟考试时间压力",
   "pvpChallenges": "PvP",
   "pvpChallengesDesc": "挑战好友进行词汇对战",
   "moreActivities": "更多活动"

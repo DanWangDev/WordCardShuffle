@@ -32,7 +32,7 @@ WordCardShffle/
 │   │   │   ├── config/      # Database connection, migration runner
 │   │   │   ├── jobs/        # Background job queue
 │   │   │   ├── middleware/  # Auth, validation, rate limiting, cache, turnstile
-│   │   │   ├── migrations/  # Sequential DB migrations (001–020)
+│   │   │   ├── migrations/  # Sequential DB migrations (001–023)
 │   │   │   ├── repositories/# Data access layer (interfaces + SQLite implementations)
 │   │   │   ├── routes/      # Express route handlers
 │   │   │   ├── services/    # Business logic (auth, email, audit, SRS, PvP, etc.)

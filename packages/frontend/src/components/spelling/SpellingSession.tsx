@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Home, Loader2, Inbox } from 'lucide-react';
-import { SentenceBuildCard } from './SentenceBuildCard';
-import { exerciseApi, type SentenceBuildExercise } from '../../services/api/exerciseApi';
+import { SpellingSetup } from './SpellingSetup';
+import { SpellingCard } from './SpellingCard';
+import { exerciseApi, type SpellingExercise } from '../../services/api/exerciseApi';
 import { useApp } from '../../contexts/AppContext';
 import { useAchievements } from '../../hooks/useAchievements';
 
@@ -17,40 +18,35 @@ interface AnswerRecord {
   timeSpent: number;
 }
 
-export function SentenceBuildSession() {
+export function SpellingSession() {
   const { t } = useTranslation('exercises');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { activeWordlist } = useApp();
   const { showAchievements } = useAchievements();
+  const wordlistId = parseInt(searchParams.get('wordlistId') || '0', 10) || activeWordlist?.id || 0;
 
-  // Use wordlistId from URL params, fall back to active wordlist
-  const paramWordlistId = parseInt(searchParams.get('wordlistId') || '0', 10);
-  const wordlistId = paramWordlistId || activeWordlist?.id || 0;
-
-  const [exercises, setExercises] = useState<SentenceBuildExercise[]>([]);
+  const [mode, setMode] = useState<'definition' | 'fill_blank'>('definition');
+  const [exercises, setExercises] = useState<SpellingExercise[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'setup' | 'active' | 'complete'>('setup');
   const [resolvedWordlistId, setResolvedWordlistId] = useState<number>(wordlistId);
   const sessionStartRef = useRef(Date.now());
-  const questionStartRef = useRef(Date.now());
 
-  const fetchExercises = useCallback(async () => {
+  const fetchExercises = useCallback(async (selectedMode: 'definition' | 'fill_blank', count: number) => {
     setLoading(true);
     setError(null);
     try {
-      // Pass wordlistId if available; backend will fall back to user's active wordlist
-      const data = await exerciseApi.getSentenceBuild(wordlistId || undefined, 10);
+      const data = await exerciseApi.getSpelling(wordlistId || undefined, selectedMode, count);
       if (data.wordlistId) setResolvedWordlistId(data.wordlistId);
       setExercises(data.exercises);
       setCurrentIndex(0);
-      setCorrectCount(0);
       setAnswers([]);
       sessionStartRef.current = Date.now();
-      questionStartRef.current = Date.now();
+      setPhase('active');
     } catch {
       setError('Failed to load exercises');
     } finally {
@@ -58,26 +54,18 @@ export function SentenceBuildSession() {
     }
   }, [wordlistId]);
 
-  useEffect(() => {
-    fetchExercises();
-  }, [fetchExercises]);
+  const handleStart = (config: { mode: 'definition' | 'fill_blank'; questionCount: number }) => {
+    setMode(config.mode);
+    fetchExercises(config.mode, config.questionCount);
+  };
 
-  // Reset question timer on each new question
-  useEffect(() => {
-    questionStartRef.current = Date.now();
-  }, [currentIndex]);
-
-  const handleResult = (correct: boolean) => {
-    const timeSpent = Date.now() - questionStartRef.current;
+  const handleResult = (correct: boolean, timeSpent: number) => {
     const exercise = exercises[currentIndex];
-
-    if (correct) setCorrectCount(prev => prev + 1);
-
     setAnswers(prev => [...prev, {
       questionIndex: currentIndex,
       word: exercise.word,
-      correctAnswer: exercise.sentence,
-      userAnswer: null,
+      correctAnswer: exercise.word,
+      userAnswer: null, // simplified for result tracking
       isCorrect: correct,
       timeSpent,
     }]);
@@ -88,13 +76,15 @@ export function SentenceBuildSession() {
 
   // Submit results when complete
   useEffect(() => {
-    if (!isComplete) return;
+    if (!isComplete || phase !== 'active') return;
+    setPhase('complete');
 
-    const score = Math.round((correctCount / exercises.length) * 100);
+    const correctCount = answers.filter(a => a.isCorrect).length;
+    const score = Math.round((correctCount / answers.length) * 100);
     const totalTime = Date.now() - sessionStartRef.current;
 
     exerciseApi.submitResult({
-      exerciseType: 'sentence_build',
+      exerciseType: 'spelling',
       wordlistId: resolvedWordlistId || null,
       totalQuestions: exercises.length,
       correctAnswers: correctCount,
@@ -105,14 +95,32 @@ export function SentenceBuildSession() {
       if (result.newAchievements && result.newAchievements.length > 0) {
         showAchievements(result.newAchievements);
       }
-    }).catch(err => console.error('Failed to save sentence build results:', err));
+    }).catch(err => console.error('Failed to save spelling results:', err));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isComplete]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F0F9FF] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
+  if (phase === 'setup') {
+    return (
+      <div className="min-h-screen bg-[#F0F9FF] flex flex-col">
+        <header className="bg-white border-b border-gray-100 px-4 py-3">
+          <div className="max-w-lg mx-auto flex items-center gap-3">
+            <button onClick={() => navigate('/')} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <h1 className="text-lg font-bold text-gray-900">{t('spelling')}</h1>
+          </div>
+        </header>
+        <div className="flex-1 flex items-start justify-center p-4 pt-8">
+          <SpellingSetup onStart={handleStart} />
+        </div>
       </div>
     );
   }
@@ -127,10 +135,10 @@ export function SentenceBuildSession() {
         >
           <Inbox className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">{t('noExercises')}</h2>
-          <p className="text-gray-500 mb-6">{t('noExercisesMessage')}</p>
+          <p className="text-gray-500 mb-6">{t('noSpellingMessage')}</p>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition-colors"
+            className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors cursor-pointer"
           >
             {t('backToDashboard')}
           </button>
@@ -139,8 +147,8 @@ export function SentenceBuildSession() {
     );
   }
 
-  if (isComplete) {
-    const score = Math.round((correctCount / exercises.length) * 100);
+  if (phase === 'complete') {
+    const correctCount = answers.filter(a => a.isCorrect).length;
     return (
       <div className="min-h-screen bg-[#F0F9FF] flex items-center justify-center p-4">
         <motion.div
@@ -148,23 +156,37 @@ export function SentenceBuildSession() {
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-3xl p-8 shadow-lg text-center max-w-sm w-full"
         >
-          <div className="text-5xl mb-4">{score === 100 ? '🏆' : '🏗️'}</div>
+          <div className="text-5xl mb-4">{correctCount === exercises.length ? '\u{1F3C6}' : '\u{270D}\u{FE0F}'}</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('sessionComplete')}</h2>
           <p className="text-lg text-gray-600 mb-6">
             {t('score', { correct: correctCount, total: exercises.length })}
           </p>
 
+          {/* Missed words */}
+          {answers.some(a => !a.isCorrect) && (
+            <div className="mb-6 text-left">
+              <p className="text-sm font-semibold text-gray-500 mb-2">{t('misspelledWords')}</p>
+              <div className="flex flex-wrap gap-2">
+                {answers.filter(a => !a.isCorrect).map(a => (
+                  <span key={a.word} className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium">
+                    {a.word}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col gap-3">
             <button
-              onClick={fetchExercises}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition-colors"
+              onClick={() => { setPhase('setup'); setExercises([]); }}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               {t('tryAgain')}
             </button>
             <button
               onClick={() => navigate('/')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors cursor-pointer"
             >
               <Home className="w-4 h-4" />
               {t('backToDashboard')}
@@ -186,7 +208,7 @@ export function SentenceBuildSession() {
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="text-lg font-bold text-gray-900">{t('sentenceBuild')}</h1>
+          <h1 className="text-lg font-bold text-gray-900">{t('spelling')}</h1>
           <span className="ml-auto text-sm text-gray-500">
             {currentIndex + 1} / {exercises.length}
           </span>
@@ -197,7 +219,7 @@ export function SentenceBuildSession() {
       <div className="max-w-lg mx-auto w-full px-4 pt-4">
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300 rounded-full"
+            className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-300 rounded-full"
             style={{ width: `${(currentIndex / exercises.length) * 100}%` }}
           />
         </div>
@@ -207,9 +229,10 @@ export function SentenceBuildSession() {
       <div className="flex-1 flex items-start justify-center p-4 pt-8">
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait">
-            <SentenceBuildCard
+            <SpellingCard
               key={currentIndex}
               exercise={exercises[currentIndex]}
+              mode={mode}
               onResult={handleResult}
             />
           </AnimatePresence>

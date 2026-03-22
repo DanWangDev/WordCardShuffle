@@ -10,7 +10,7 @@ import type { AuthRequest } from '../types';
 const router = Router();
 
 const quizResultSchema = z.object({
-  quizType: z.enum(['quiz', 'challenge']),
+  quizType: z.enum(['quiz', 'challenge', 'timed']),
   totalQuestions: z.number().int().min(1).max(200),
   correctAnswers: z.number().int().min(0),
   score: z.number().min(0).max(100),

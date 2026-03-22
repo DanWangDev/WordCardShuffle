@@ -201,4 +201,41 @@ router.post('/:id/submit', validate(submitAnswersSchema), (req: AuthRequest, res
   }
 });
 
+// POST /api/pvp/:id/rematch - Create a rematch challenge
+router.post('/:id/rematch', (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const challengeId = parseInt(req.params.id as string, 10);
+    if (isNaN(challengeId)) {
+      res.status(400).json({ error: 'Bad Request', message: 'Invalid challenge ID' });
+      return;
+    }
+
+    const challenge = pvpService.createRematch(challengeId, userId);
+    res.status(201).json({ challenge });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create rematch';
+    res.status(400).json({ error: 'Bad Request', message });
+  }
+});
+
+// GET /api/pvp/:id/comparison - Get per-question comparison for completed challenge
+router.get('/:id/comparison', (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const challengeId = parseInt(req.params.id as string, 10);
+    if (isNaN(challengeId)) {
+      res.status(400).json({ error: 'Bad Request', message: 'Invalid challenge ID' });
+      return;
+    }
+
+    const comparison = pvpService.getQuestionComparison(challengeId, userId);
+    res.json(comparison);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to get comparison';
+    const status = message.includes('not found') ? 404 : 400;
+    res.status(status).json({ error: status === 404 ? 'Not Found' : 'Bad Request', message });
+  }
+});
+
 export default router;

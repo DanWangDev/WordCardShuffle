@@ -4,7 +4,7 @@ import { logger } from '../services/logger.js';
 
 export interface CreateQuizResultParams {
   userId: number;
-  quizType: 'quiz' | 'challenge';
+  quizType: 'quiz' | 'challenge' | 'timed';
   totalQuestions: number;
   correctAnswers: number;
   score: number;

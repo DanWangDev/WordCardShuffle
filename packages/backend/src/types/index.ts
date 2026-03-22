@@ -60,7 +60,7 @@ export interface RefreshTokenRow {
 export interface QuizResultRow {
   id: number;
   user_id: number;
-  quiz_type: 'quiz' | 'challenge';
+  quiz_type: 'quiz' | 'challenge' | 'timed';
   total_questions: number;
   correct_answers: number;
   score: number;
@@ -422,7 +422,7 @@ export interface GroupMemberWithUser extends GroupMemberRow {
 // Quiz result parameter types
 export interface CreateQuizResultParams {
   userId: number;
-  quizType: 'quiz' | 'challenge';
+  quizType: 'quiz' | 'challenge' | 'timed';
   totalQuestions: number;
   correctAnswers: number;
   score: number;

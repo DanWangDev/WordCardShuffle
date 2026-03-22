@@ -33,8 +33,10 @@ export function getComputedStats(userId: number): UserStats {
       SELECT MAX(completed_at) as latest FROM quiz_results WHERE user_id = ?
       UNION ALL
       SELECT MAX(created_at) as latest FROM daily_challenges WHERE user_id = ?
+      UNION ALL
+      SELECT MAX(completed_at) as latest FROM exercise_results WHERE user_id = ?
     )
-  `).get(userId, userId, userId) as { last_date: string | null };
+  `).get(userId, userId, userId, userId) as { last_date: string | null };
 
   return {
     totalWordsStudied: wordsStudied?.count ?? 0,

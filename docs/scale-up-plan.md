@@ -14,6 +14,7 @@ Vocab Master is running on a NAS via Docker, used by ~15 users (family + friends
 | 4 | Analytics & Reports | M | P1, P2 | DONE | Word mastery, CSV export, learning trends |
 | 5 | Richer Learning Modes | L | P4 | DONE | SRS, flashcards, audio, sentence building |
 | 6 | PvP Challenges & Polish | M | P2, P3 | DONE | Head-to-head quizzes, error boundaries, code splitting |
+| 7 | Enhanced Learning & Exam Prep | L | P5, P6 | IN PROGRESS | Spelling, timed quiz, exercise persistence, PvP fairness |
 
 Phases 2 and 3 can run in parallel after Phase 1. Phase 4 can start after Phase 2. Each phase is independently deployable.
 
@@ -328,6 +329,70 @@ Enhanced `GET /api/health` with: DB connectivity, DB file size, uptime, memory u
 - **Mobile responsive fixes** (March 2026): Dashboard stats/compact card grids responsive (`grid-cols-2 sm:grid-cols-4`), PvP tabs truncated with hidden icons on mobile, flashcard height viewport-aware (`min(400px, 60vh)`), report charts stacked on mobile, reports page bottom padding
 - **Achievement unlock toast wiring** (March 2026): `AchievementContext` with sequential queue, `useAchievements` hook, wired into `QuizMode` and `DailyChallenge` to show golden slide-in toasts from `AchievementUnlockedToast` when backend returns `newAchievements`
 - **Offline handling / backup improvements:** Deferred — current NAS setup with existing backup script is sufficient for ~50 users
+
+---
+
+## Phase 7: Enhanced Learning & Exam Prep (IN PROGRESS)
+
+**Branch:** `feat/phase-7-enhanced-learning`
+**Tests:** 387 backend (all passing), frontend TypeScript clean
+
+### Phase 7a — Core Learning Modes (DONE)
+
+#### Database Schema (Migrations 021-023)
+
+**021_add_exercise_results.ts:**
+- `exercise_results` table: user_id, exercise_type (sentence_build/spelling), wordlist_id, total_questions, correct_answers, score, total_time_spent, completed_at
+- `exercise_answers` table: exercise_result_id, question_index, word, correct_answer, user_answer, is_correct, time_spent
+
+**022_add_pvp_questions.ts:**
+- `pvp_questions` table: challenge_id, question_index, word, correct_answer, options (JSON)
+- `pvp_challenges.rematch_of` column
+- 7 new achievements: pvp_wins_5, pvp_wins_10, pvp_streak_3, spelling_20, perfect_speller, speed_round, time_master
+
+**023_add_timed_quiz_type.ts:**
+- Recreates `quiz_results` to update CHECK constraint: `quiz_type IN ('quiz', 'challenge', 'timed')`
+
+#### Feature 1: Sentence Building Enhancement (DONE)
+
+- Fixed dashboard navigation bug (missing wordlistId)
+- Added `resolveWordlistId()` backend fallback (user active wordlist → first system wordlist)
+- Results now persist to `exercise_results`/`exercise_answers`
+- Per-word timing tracked, word mastery updated, achievements triggered
+
+#### Feature 2: Spelling Exercise (DONE)
+
+- Two modes: definition prompt and fill-in-the-blank
+- Forced retry on mistakes (muscle memory reinforcement)
+- Case-insensitive comparison, auto-focus input, Enter to submit
+- Green/red feedback animations with Framer Motion
+- New components: `SpellingSetup.tsx`, `SpellingCard.tsx`, `SpellingSession.tsx`
+
+#### Feature 3: PvP Question Persistence + Mastery (DONE)
+
+- Questions generated and persisted at challenge creation
+- Both players answer identical questions
+- PvP answers now feed into word mastery tracking
+- Rematch button creates new challenge with `rematch_of` reference
+- Per-question comparison view for both players' answers
+
+#### Feature 4: Timed Challenge Mode (DONE)
+
+- Three difficulty levels: easy (15s/Q), medium (10s/Q), hard (6s/Q)
+- Per-question countdown with animated timer bar
+- Auto-advance on timeout, auto-submit on time-out
+- Reuses QuestionCard and QuizResults patterns
+- Saves with `quizType: 'timed'`
+
+### Phase 7b — Engagement & Visualisation (NOT STARTED)
+
+- Feature 5: Streak Animation + 90-Day Heatmap
+- Feature 6: Group Stats + Group Leaderboard
+
+### Phase 7c — Social & Engagement (NOT STARTED)
+
+- Feature 7: Word of the Day + Mini Quiz
+- Feature 8: Vocabulary Notebook
 
 ---
 

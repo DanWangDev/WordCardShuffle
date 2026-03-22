@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool, Swords } from 'lucide-react';
+import { BookOpen, Brain, Trophy, Volume2, VolumeX, Flame, List, Award, BarChart3, Users, TrendingUp, Layers, PenTool, Swords, Type, Clock } from 'lucide-react';
 import { ModeCard } from './ModeCard';
 import { CompactCard } from './CompactCard';
 import { UserMenu } from '../common/UserMenu';
@@ -272,6 +272,18 @@ export function Dashboard() {
                     icon={PenTool}
                     color="bg-gradient-to-br from-lime-500 to-green-600 shadow-[rgba(132,204,22,0.25)_0px_6px_16px]"
                     onClick={() => navigate('/exercises/sentence-build')}
+                  />
+                  <CompactCard
+                    title={t('spelling')}
+                    icon={Type}
+                    color="bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[rgba(16,185,129,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/exercises/spelling')}
+                  />
+                  <CompactCard
+                    title={t('timedChallenge')}
+                    icon={Clock}
+                    color="bg-gradient-to-br from-amber-500 to-orange-600 shadow-[rgba(245,158,11,0.25)_0px_6px_16px]"
+                    onClick={() => navigate('/quiz/timed')}
                   />
                   <CompactCard
                     title={t('pvpChallenges')}

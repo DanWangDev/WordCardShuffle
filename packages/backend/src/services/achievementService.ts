@@ -1,4 +1,5 @@
 import { achievementRepository, notificationRepository, challengeRepository, statsRepository } from '../repositories/index.js';
+import { db } from '../config/database.js';
 import type { UserAchievementWithDetails } from '../repositories/interfaces/IAchievementRepository.js';
 import type { AchievementRow } from '../types/index.js';
 import { logger } from './logger.js';
@@ -24,6 +25,11 @@ export function checkAndAwardAchievements(
     totalWordsStudied?: number;
     streakDays?: number;
     challengeScore?: number;
+    exerciseType?: string;
+    exerciseScore?: number;
+    exerciseQuestionCount?: number;
+    totalCorrectSpellings?: number;
+    totalTimedQuizzes?: number;
   }
 ): NewlyEarnedAchievement[] {
   const earnedSlugs = new Set(achievementRepository.findEarnedSlugs(userId));
@@ -44,7 +50,7 @@ export function checkAndAwardAchievements(
       totalQuizzes,
       totalWordsStudied: totalWords,
       streakDays,
-    });
+    }, userId);
 
     if (earned) {
       const row = achievementRepository.award(userId, achievement.id);
@@ -74,6 +80,28 @@ export function checkAndAwardAchievements(
   return newlyEarned;
 }
 
+function getPvpWinCount(userId: number): number {
+  const row = db.prepare(
+    'SELECT COUNT(*) as count FROM pvp_challenges WHERE winner_id = ? AND status = ?'
+  ).get(userId, 'completed') as { count: number };
+  return row.count;
+}
+
+function getSpellingCorrectCount(userId: number): number {
+  const row = db.prepare(`
+    SELECT COALESCE(SUM(correct_answers), 0) as count
+    FROM exercise_results WHERE user_id = ? AND exercise_type = 'spelling'
+  `).get(userId) as { count: number };
+  return row.count;
+}
+
+function getTimedQuizCount(userId: number): number {
+  const row = db.prepare(
+    "SELECT COUNT(*) as count FROM quiz_results WHERE user_id = ? AND quiz_type = 'timed'"
+  ).get(userId) as { count: number };
+  return row.count;
+}
+
 function evaluateAchievement(
   achievement: AchievementRow,
   context: {
@@ -83,7 +111,13 @@ function evaluateAchievement(
     totalWordsStudied: number;
     streakDays: number;
     challengeScore?: number;
-  }
+    exerciseType?: string;
+    exerciseScore?: number;
+    exerciseQuestionCount?: number;
+    totalCorrectSpellings?: number;
+    totalTimedQuizzes?: number;
+  },
+  userId?: number
 ): boolean {
   switch (achievement.slug) {
     // Quiz achievements
@@ -123,6 +157,34 @@ function evaluateAchievement(
       return context.challengeScore !== undefined;
     case 'challenge_score_90':
       return context.challengeScore !== undefined && context.challengeScore >= 90;
+
+    // PvP achievements
+    case 'pvp_wins_5':
+      return userId !== undefined && getPvpWinCount(userId) >= 5;
+    case 'pvp_wins_10':
+      return userId !== undefined && getPvpWinCount(userId) >= 10;
+    case 'pvp_streak_3':
+      return userId !== undefined && getPvpWinCount(userId) >= 3;
+
+    // Spelling achievements
+    case 'spelling_20': {
+      if (userId === undefined) return false;
+      const total = context.totalCorrectSpellings ?? getSpellingCorrectCount(userId);
+      return total >= 20;
+    }
+    case 'perfect_speller':
+      return context.exerciseType === 'spelling'
+        && context.exerciseScore === 100
+        && (context.exerciseQuestionCount ?? 0) >= 15;
+
+    // Timed quiz achievements
+    case 'speed_round':
+      return context.quizScore !== undefined && context.quizScore >= 80;
+    case 'time_master': {
+      if (userId === undefined) return false;
+      const total = context.totalTimedQuizzes ?? getTimedQuizCount(userId);
+      return total >= 10;
+    }
 
     default:
       return false;
