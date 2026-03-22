@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useXp } from '../../contexts/XpContext';
+import { useXp } from '../../hooks/useXp';
 
 export function XpProgressBar() {
   const { t } = useTranslation('gamification');

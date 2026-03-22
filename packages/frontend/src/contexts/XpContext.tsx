@@ -1,23 +1,8 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, type ReactNode } from 'react';
 import { gamificationApi, type LevelInfo, type XpResult } from '../services/api/gamificationApi';
 import { useAuth } from './AuthContext';
-
-interface XpPopupItem {
-  id: string;
-  amount: number;
-}
-
-interface XpContextType {
-  levelInfo: LevelInfo | null;
-  xpPopups: XpPopupItem[];
-  levelUpEvent: { level: number; title: string } | null;
-  handleXpResult: (xp: XpResult) => void;
-  dismissLevelUp: () => void;
-  dismissPopup: (id: string) => void;
-  refreshLevelInfo: () => void;
-}
-
-const XpContext = createContext<XpContextType | null>(null);
+import { XpContext } from './xpContextDef';
+import type { XpPopupItem } from './xpContextDef';
 
 export function XpProvider({ children }: { children: ReactNode }) {
   const { state: authState } = useAuth();
@@ -75,10 +60,4 @@ export function XpProvider({ children }: { children: ReactNode }) {
       {children}
     </XpContext.Provider>
   );
-}
-
-export function useXp() {
-  const ctx = useContext(XpContext);
-  if (!ctx) throw new Error('useXp must be used within XpProvider');
-  return ctx;
 }

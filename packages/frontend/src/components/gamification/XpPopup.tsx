@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useXp } from '../../contexts/XpContext';
+import { useXp } from '../../hooks/useXp';
 
 export function XpPopup() {
   const { t } = useTranslation('gamification');
