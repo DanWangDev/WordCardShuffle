@@ -2,6 +2,28 @@
 
 All notable changes to the Vocab Master project are documented here.
 
+## 2026-03-22
+
+### Phase 7a — Enhanced Learning & Exam Prep (PR #24)
+
+Sentence building result persistence, spelling exercises (definition + fill-in-the-blank modes), PvP question persistence with rematch support, timed challenge mode (exam simulation), and 7 new achievements (22 total).
+
+**New features:**
+- **Spelling exercises** — two modes: definition prompt (type the word from its definition) and fill-in-the-blank (type the missing word in a sentence); forced retry on mistakes for muscle memory reinforcement
+- **Timed challenge mode** — exam simulation with per-question countdown at 3 difficulty levels (easy 15s, medium 10s, hard 6s); auto-advance on timeout
+- **PvP question persistence** — questions now stored at challenge creation for fairness; rematch button; per-question comparison view
+- **Exercise result tracking** — sentence building and spelling results now persist to `exercise_results`/`exercise_answers` tables, feed into word mastery and achievements
+
+**Schema changes (migrations 021–023):**
+- `exercise_results` + `exercise_answers` tables for persisting exercise session data
+- `pvp_questions` table for storing challenge questions at creation time
+- `pvp_challenges.rematch_of` column for rematch tracking
+- `quiz_results` CHECK constraint updated to include `'timed'` quiz type
+- 7 new achievements: `pvp_wins_5`, `pvp_wins_10`, `pvp_streak_3`, `spelling_20`, `perfect_speller`, `speed_round`, `time_master`
+
+**Key commits:**
+- `7d1e828` feat: Phase 7a enhanced learning — exercises, spelling, PvP persistence, timed mode
+
 ## 2026-03-18
 
 ### Post-Phase Fixes
