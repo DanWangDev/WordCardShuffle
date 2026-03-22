@@ -1,10 +1,37 @@
 import { db } from '../config/database.js';
+import { exerciseResultRepository } from '../repositories/index.js';
+import { wordMasteryService } from './wordMasteryService.js';
+import { checkAndAwardAchievements } from './achievementService.js';
 import type { WordlistWordRow } from '../types/index.js';
 
 export interface SentenceBuildExercise {
   word: string;
   sentence: string;
   tokens: string[];
+}
+
+export interface SpellingExercise {
+  word: string;
+  definition: string;
+  sentence?: string;
+  blankedSentence?: string;
+}
+
+export interface ExerciseSubmission {
+  exerciseType: 'sentence_build' | 'spelling';
+  wordlistId: number | null;
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  totalTimeSpent: number | null;
+  answers: ReadonlyArray<{
+    questionIndex: number;
+    word: string;
+    correctAnswer: string;
+    userAnswer: string | null;
+    isCorrect: boolean;
+    timeSpent: number | null;
+  }>;
 }
 
 function shuffleArray<T>(arr: readonly T[]): T[] {
@@ -14,6 +41,26 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
+}
+
+function resolveWordlistId(wordlistId: number | undefined, userId: number): number {
+  if (wordlistId && wordlistId > 0) return wordlistId;
+
+  // Fallback: use user's active wordlist
+  const row = db.prepare(
+    'SELECT wordlist_id FROM user_active_wordlist WHERE user_id = ?'
+  ).get(userId) as { wordlist_id: number } | undefined;
+
+  if (row) return row.wordlist_id;
+
+  // Final fallback: first system wordlist
+  const system = db.prepare(
+    "SELECT id FROM wordlists WHERE is_system = 1 ORDER BY id LIMIT 1"
+  ).get() as { id: number } | undefined;
+
+  if (system) return system.id;
+
+  throw new Error('No wordlist available');
 }
 
 export const exerciseService = {
@@ -54,5 +101,99 @@ export const exerciseService = {
     }
 
     return exercises;
+  },
+
+  resolveWordlistId,
+
+  getSpellingExercises(wordlistId: number, mode: 'definition' | 'fill_blank', limit = 10): SpellingExercise[] {
+    const filterClause = mode === 'fill_blank'
+      ? "AND example_sentences != '[]' AND example_sentences != ''"
+      : "AND definitions != '[]' AND definitions != ''";
+
+    const rows = db.prepare(`
+      SELECT * FROM wordlist_words
+      WHERE wordlist_id = ? ${filterClause}
+      ORDER BY RANDOM()
+      LIMIT ?
+    `).all(wordlistId, limit * 2) as WordlistWordRow[];
+
+    const exercises: SpellingExercise[] = [];
+
+    for (const row of rows) {
+      if (exercises.length >= limit) break;
+
+      // Parse definition
+      let definition = '';
+      try {
+        const defs = JSON.parse(row.definitions) as string[];
+        definition = defs[0] || '';
+      } catch {
+        definition = row.definitions || '';
+      }
+
+      if (!definition) continue;
+
+      if (mode === 'fill_blank') {
+        let sentences: string[];
+        try {
+          sentences = JSON.parse(row.example_sentences);
+        } catch {
+          continue;
+        }
+
+        if (!Array.isArray(sentences) || sentences.length === 0) continue;
+
+        const sentence = sentences[Math.floor(Math.random() * sentences.length)];
+        if (!sentence) continue;
+
+        // Create blanked sentence by replacing the target word with underscores
+        const wordRegex = new RegExp(`\\b${row.target_word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        const blankedSentence = sentence.replace(wordRegex, '____');
+
+        // Only use if the word was actually found in the sentence
+        if (blankedSentence === sentence) continue;
+
+        exercises.push({
+          word: row.target_word,
+          definition,
+          sentence,
+          blankedSentence,
+        });
+      } else {
+        exercises.push({
+          word: row.target_word,
+          definition,
+        });
+      }
+    }
+
+    return exercises;
+  },
+
+  submitResult(userId: number, submission: ExerciseSubmission) {
+    const resultId = exerciseResultRepository.create({
+      userId,
+      exerciseType: submission.exerciseType,
+      wordlistId: submission.wordlistId,
+      totalQuestions: submission.totalQuestions,
+      correctAnswers: submission.correctAnswers,
+      score: submission.score,
+      totalTimeSpent: submission.totalTimeSpent,
+      answers: submission.answers,
+    });
+
+    // Update word mastery
+    wordMasteryService.recordQuizAnswers(
+      userId,
+      submission.answers.map(a => ({ word: a.word, isCorrect: a.isCorrect })),
+      submission.wordlistId ?? undefined
+    );
+
+    // Check achievements
+    const newlyEarned = checkAndAwardAchievements(userId, {
+      quizScore: submission.score,
+    });
+
+    return { resultId, newlyEarned };
   },
 };

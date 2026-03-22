@@ -32,6 +32,10 @@
   "flashcardsDesc": "Spaced repetition review",
   "sentenceBuild": "Sentences",
   "sentenceBuildDesc": "Build sentences from words",
+  "spelling": "Spelling",
+  "spellingDesc": "Practice spelling words correctly",
+  "timedChallenge": "Timed",
+  "timedChallengeDesc": "Exam simulation under time pressure",
   "pvpChallenges": "PvP",
   "pvpChallengesDesc": "Challenge friends to vocab battles",
   "moreActivities": "More Activities"

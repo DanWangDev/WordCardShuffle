@@ -6,13 +6,14 @@ import type { StudentReportSummary } from '../types/index.js';
 
 function getRecentAccuracy(userId: number): number {
   const result = db.prepare(`
-    SELECT COALESCE(
-      ROUND(AVG(correct_answers * 100.0 / NULLIF(total_questions, 0)), 0),
-      0
-    ) as avg_accuracy
-    FROM quiz_results
-    WHERE user_id = ?
-  `).get(userId) as { avg_accuracy: number };
+    SELECT COALESCE(ROUND(AVG(accuracy), 0), 0) as avg_accuracy FROM (
+      SELECT correct_answers * 100.0 / NULLIF(total_questions, 0) as accuracy
+      FROM quiz_results WHERE user_id = ?
+      UNION ALL
+      SELECT score as accuracy
+      FROM exercise_results WHERE user_id = ?
+    )
+  `).get(userId, userId) as { avg_accuracy: number };
   return result.avg_accuracy;
 }
 
@@ -21,8 +22,10 @@ function getCurrentStreak(userId: number): number {
     SELECT DISTINCT date(start_time) as activity_date FROM study_sessions WHERE user_id = ?
     UNION
     SELECT DISTINCT date(completed_at) as activity_date FROM quiz_results WHERE user_id = ?
+    UNION
+    SELECT DISTINCT date(completed_at) as activity_date FROM exercise_results WHERE user_id = ?
     ORDER BY activity_date DESC
-  `).all(userId, userId) as Array<{ activity_date: string }>;
+  `).all(userId, userId, userId) as Array<{ activity_date: string }>;
 
   let streak = 0;
   if (activityDates.length > 0) {

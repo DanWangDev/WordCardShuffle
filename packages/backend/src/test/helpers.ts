@@ -151,7 +151,7 @@ export function seedQuizResults(
     correctAnswers: number
     score?: number
     totalTimeSpent?: number
-    quizType?: 'quiz' | 'challenge'
+    quizType?: 'quiz' | 'challenge' | 'timed'
     completedAt?: string
   }>
 ): number[] {

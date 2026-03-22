@@ -70,9 +70,11 @@ function calculateStreak(userId: number): number {
       SELECT date(completed_at) as activity_date FROM quiz_results WHERE user_id = ?
       UNION
       SELECT date(created_at) as activity_date FROM daily_challenges WHERE user_id = ?
+      UNION
+      SELECT date(completed_at) as activity_date FROM exercise_results WHERE user_id = ?
     )
     ORDER BY activity_date DESC
-  `).all(userId, userId, userId) as { activity_date: string }[];
+  `).all(userId, userId, userId, userId) as { activity_date: string }[];
 
   if (activityDates.length === 0) return 0;
 
@@ -124,8 +126,11 @@ function getWeeklyStats(userId: number, weekOffset: number) {
       UNION
       SELECT date(created_at) as activity_date FROM daily_challenges
         WHERE user_id = ? AND date(created_at) >= ${offsetClause} AND date(created_at) < ${endClause}
+      UNION
+      SELECT date(completed_at) as activity_date FROM exercise_results
+        WHERE user_id = ? AND date(completed_at) >= ${offsetClause} AND date(completed_at) < ${endClause}
     )
-  `).get(userId, userId, userId) as { count: number };
+  `).get(userId, userId, userId, userId) as { count: number };
 
   const quizzes = db.prepare(`
     SELECT COUNT(*) as count FROM quiz_results
@@ -187,8 +192,10 @@ function getActivityStatus(userId: number): 'active' | 'some' | 'inactive' {
       SELECT MAX(completed_at) as latest FROM quiz_results WHERE user_id = ?
       UNION ALL
       SELECT MAX(created_at) as latest FROM daily_challenges WHERE user_id = ?
+      UNION ALL
+      SELECT MAX(completed_at) as latest FROM exercise_results WHERE user_id = ?
     )
-  `).get(userId, userId, userId) as { latest: string | null };
+  `).get(userId, userId, userId, userId) as { latest: string | null };
 
   if (!recent.latest) return 'inactive';
 

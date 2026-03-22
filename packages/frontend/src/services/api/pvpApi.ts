@@ -87,4 +87,20 @@ export const pvpApi = {
       body: JSON.stringify({ answers }),
     });
   },
+
+  async createRematch(challengeId: number): Promise<{ challenge: PvpChallenge }> {
+    return baseApi.fetchWithAuth(`/pvp/${challengeId}/rematch`, {
+      method: 'POST',
+    });
+  },
+
+  async getQuestionComparison(challengeId: number): Promise<{
+    questions: PvpQuestion[];
+    challengerAnswers: Array<{ question_index: number; word: string; correct_answer: string; selected_answer: string | null; is_correct: number }>;
+    opponentAnswers: Array<{ question_index: number; word: string; correct_answer: string; selected_answer: string | null; is_correct: number }>;
+    challenger: { id: number; username: string; displayName: string | null; score: number | null };
+    opponent: { id: number; username: string; displayName: string | null; score: number | null };
+  }> {
+    return baseApi.fetchWithAuth(`/pvp/${challengeId}/comparison`);
+  },
 };

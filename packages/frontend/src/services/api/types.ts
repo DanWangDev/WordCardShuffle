@@ -61,7 +61,7 @@ export interface ApiError {
 
 // Quiz Result Interfaces
 export interface SaveQuizResultRequest {
-  quizType: 'quiz' | 'challenge';
+  quizType: 'quiz' | 'challenge' | 'timed';
   totalQuestions: number;
   correctAnswers: number;
   score: number;
