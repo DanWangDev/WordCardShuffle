@@ -202,12 +202,6 @@ export function ChallengeResults() {
                   className="space-y-3 mb-6"
                 >
                   {comparison.questions.map((q, i) => {
-                    const myAnswer = comparison.challengerAnswers.find(a => a.question_index === i)
-                      ?? comparison.opponentAnswers.find(a => a.question_index === i);
-                    const theirAnswer = comparison.opponentAnswers.find(a => a.question_index === i)
-                      ?? comparison.challengerAnswers.find(a => a.question_index === i);
-
-                    // Determine which is "mine" vs "theirs"
                     const iAmChallenger = challenge.challenger_id === userId;
                     const myAns = iAmChallenger
                       ? comparison.challengerAnswers.find(a => a.question_index === i)
